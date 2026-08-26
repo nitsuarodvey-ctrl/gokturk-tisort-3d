@@ -15,9 +15,9 @@ export const PRINT_CONFIG = {
     scale: { width: 0.105, depth: 0.12 },
   },
   sleeve: {
-    position: { x: 0.75, y: 0.735, z: 0.16 },
+    position: { x: 0.88, y: 0.765, z: 0.16 },
     rotation: { x: 0, y: Math.PI * 0.34, z: -Math.PI * 0.035 },
-    scale: { width: 0.205, depth: 0.2 },
+    scale: { width: 0.195, depth: 0.2 },
   },
 };
 
