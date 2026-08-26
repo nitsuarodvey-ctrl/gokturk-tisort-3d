@@ -1,0 +1,132 @@
+.viewer-shell,
+.viewer-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0c0d10;
+}
+
+.viewer-canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+}
+
+.viewer-canvas canvas:active {
+  cursor: grabbing;
+}
+
+.view-controls {
+  position: fixed;
+  z-index: 5;
+  left: 50%;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  display: flex;
+  transform: translateX(-50%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(12, 13, 16, 0.78);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(16px);
+}
+
+.view-controls button {
+  position: relative;
+  min-width: 78px;
+  height: 46px;
+  padding: 0 20px;
+  border: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.58);
+  font: 600 12px/1 Arial, Helvetica, sans-serif;
+  letter-spacing: 0.11em;
+  cursor: pointer;
+  transition: color 180ms ease, background-color 180ms ease;
+}
+
+.view-controls button:last-child {
+  border-right: 0;
+}
+
+.view-controls button:hover,
+.view-controls button:focus-visible,
+.view-controls button.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.view-controls button.active::after {
+  content: '';
+  position: absolute;
+  right: 18px;
+  bottom: 0;
+  left: 18px;
+  height: 1px;
+  background: #fff;
+}
+
+.view-controls button:focus-visible {
+  outline: 1px solid #fff;
+  outline-offset: -3px;
+}
+
+.view-controls button:disabled {
+  cursor: wait;
+  opacity: 0.45;
+}
+
+.load-status {
+  position: fixed;
+  z-index: 4;
+  top: 50%;
+  left: 50%;
+  width: 150px;
+  height: 1px;
+  overflow: hidden;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.load-status span {
+  display: block;
+  width: var(--load-progress, 0%);
+  height: 100%;
+  background: rgba(255, 255, 255, 0.92);
+  transition: width 180ms ease;
+}
+
+.load-status.error {
+  width: auto;
+  height: auto;
+  overflow: visible;
+  background: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 560px) {
+  .view-controls {
+    bottom: max(14px, env(safe-area-inset-bottom));
+    width: calc(100% - 28px);
+  }
+
+  .view-controls button {
+    min-width: 0;
+    flex: 1;
+    height: 44px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view-controls button,
+  .load-status span {
+    transition: none;
+  }
+}
