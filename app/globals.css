@@ -1,7 +1,8 @@
 :root {
   color-scheme: dark;
-  background: #0c0d10;
-  font-family: Arial, Helvetica, sans-serif;
+  background: #090a0b;
+  color: #eee9df;
+  font-family: Inter, Geist, "Helvetica Neue", Arial, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -13,13 +14,48 @@
 html,
 body {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   margin: 0;
+  background: #090a0b;
+}
+
+body {
   overflow: hidden;
-  background: #0c0d10;
+}
+
+body.drawer-open {
+  overflow: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 
 button,
 canvas {
   -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 1px solid #d5c9b9;
+  outline-offset: 3px;
+}
+
+::selection {
+  background: #8f1720;
+  color: #fff;
+}
+
+@media (max-width: 800px) {
+  body {
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-bottom: 76px;
+  }
 }

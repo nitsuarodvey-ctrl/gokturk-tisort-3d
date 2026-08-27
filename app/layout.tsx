@@ -2,23 +2,23 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Göktürk Ulusal Birliği — 3D Tişört',
+  title: 'GUB Merch — Siyah Oversize T-Shirt',
   description:
-    'Göktürk Ulusal Birliği siyah oversize tişörtünün etkileşimli 360° ürün görünümü.',
+    'GUB Merch Drop 001 siyah oversize tişört ön sipariş sayfası ve etkileşimli 360° ürün görünümü.',
   icons: {
     icon: '/ufaklogo.png',
   },
   openGraph: {
-    title: 'Göktürk Ulusal Birliği — 3D Tişört',
+    title: 'GUB Merch — Siyah Oversize T-Shirt',
     description:
-      'Siyah oversize tişörtün etkileşimli 360° ürün görünümü.',
+      'Drop 001 siyah oversize tişört. Ön sipariş ve etkileşimli 360° ürün görünümü.',
     type: 'website',
   },
   twitter: {
     card: 'summary',
-    title: 'Göktürk Ulusal Birliği — 3D Tişört',
+    title: 'GUB Merch — Siyah Oversize T-Shirt',
     description:
-      'Siyah oversize tişörtün etkileşimli 360° ürün görünümü.',
+      'Drop 001 siyah oversize tişört ön siparişi.',
   },
 };
 

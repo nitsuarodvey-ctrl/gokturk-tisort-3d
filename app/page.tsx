@@ -1,7 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import '../src/style.css';
+import { OrderDrawer } from '../src/components/OrderDrawer';
+import { ProductInfo } from '../src/components/ProductInfo';
+import { SizeGuideModal } from '../src/components/SizeGuideModal';
+import { ProductSize, UNIT_PRICE } from '../src/store/orders';
 
 type ViewerHandle = {
   dispose: () => void;
@@ -21,6 +25,10 @@ export default function Home() {
   const [status, setStatus] = useState('loading');
   const [progress, setProgress] = useState(0);
   const [activeView, setActiveView] = useState('reset');
+  const [size, setSize] = useState<ProductSize>('M');
+  const [quantity, setQuantity] = useState(1);
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+  const [orderOpen, setOrderOpen] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -53,39 +61,73 @@ export default function Home() {
     viewerRef.current?.goToView(id);
   };
 
+  const closeSizeGuide = useCallback(() => setSizeGuideOpen(false), []);
+  const closeOrder = useCallback(() => setOrderOpen(false), []);
+
   return (
-    <main className="viewer-shell">
-      <div ref={containerRef} className="viewer-canvas" />
+    <main className="storefront">
+      <section className="viewer-stage" aria-label="Ürün 3D görünümü">
+        <div ref={containerRef} className="viewer-canvas" />
 
-      {status !== 'ready' && (
-        <div className={`load-status ${status}`} role="status" aria-live="polite">
-          {status === 'error' ? (
-            'Model yüklenemedi'
-          ) : (
-            <span
-              style={
-                {
-                  '--load-progress': `${Math.round(progress * 100)}%`,
-                } as React.CSSProperties
-              }
-            />
-          )}
+        <div className="viewer-mark" aria-hidden="true">
+          <span>01</span>
+          <span>360° ÜRÜN GÖRÜNÜMÜ</span>
         </div>
-      )}
 
-      <nav className="view-controls" aria-label="Ürün görünümü">
-        {viewButtons.map((button) => (
-          <button
-            key={button.id}
-            type="button"
-            className={activeView === button.id ? 'active' : ''}
-            onClick={() => selectView(button.id)}
-            disabled={status !== 'ready'}
-          >
-            {button.label}
-          </button>
-        ))}
-      </nav>
+        {status !== 'ready' && (
+          <div className={`load-status ${status}`} role="status" aria-live="polite">
+            {status === 'error' ? (
+              'Model yüklenemedi'
+            ) : (
+              <span
+                style={
+                  {
+                    '--load-progress': `${Math.round(progress * 100)}%`,
+                  } as React.CSSProperties
+                }
+              />
+            )}
+          </div>
+        )}
+
+        <nav className="view-controls" aria-label="Ürün görünümü">
+          {viewButtons.map((button) => (
+            <button
+              key={button.id}
+              type="button"
+              className={activeView === button.id ? 'active' : ''}
+              onClick={() => selectView(button.id)}
+              disabled={status !== 'ready'}
+            >
+              {button.label}
+            </button>
+          ))}
+        </nav>
+      </section>
+
+      <ProductInfo
+        size={size}
+        quantity={quantity}
+        onSizeChange={setSize}
+        onQuantityChange={setQuantity}
+        onOpenSizeGuide={() => setSizeGuideOpen(true)}
+        onPreorder={() => setOrderOpen(true)}
+      />
+
+      <button className="mobile-sticky-cta" type="button" onClick={() => setOrderOpen(true)}>
+        <span>Ön Sipariş Ver</span>
+        <span>{UNIT_PRICE * quantity} TL</span>
+      </button>
+
+      <SizeGuideModal open={sizeGuideOpen} onClose={closeSizeGuide} />
+      {orderOpen && (
+        <OrderDrawer
+          open
+          initialSize={size}
+          initialQuantity={quantity}
+          onClose={closeOrder}
+        />
+      )}
     </main>
   );
 }
