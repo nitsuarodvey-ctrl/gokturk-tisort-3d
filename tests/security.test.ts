@@ -1,17 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { hashPassword, verifyPassword } from '../src/server/crypto';
 import { validateNewOrder, validateOrderUpdate } from '../src/server/validation';
-
-test('admin passwords are salted, slow-hashed and verifiable', async () => {
-  const password = 'uzun-ve-benzersiz-admin-sifresi';
-  const first = await hashPassword(password);
-  const second = await hashPassword(password);
-  assert.notEqual(first, second);
-  assert.equal(first.includes(password), false);
-  assert.equal(await verifyPassword(password, first), true);
-  assert.equal(await verifyPassword('yanlis-sifre-degeri', first), false);
-});
 
 test('public order input cannot inject financial or status fields', () => {
   const order = validateNewOrder({

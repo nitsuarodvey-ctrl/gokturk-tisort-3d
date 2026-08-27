@@ -1,18 +1,9 @@
-import { getDatabase } from './db';
-import { randomToken, sha256, verifyPassword } from './crypto';
+import { backendRequest, BackendError } from './backend';
 
 export const SESSION_COOKIE = 'gub_admin_session';
 const SESSION_MAX_AGE_SECONDS = 8 * 60 * 60;
-const DUMMY_PASSWORD_HASH = 'pbkdf2_sha256$310000$PQ2zIThf1fKK6HA9_rz3rw$TvnrDY8ett4f5FykE9-fcSUfFqgkDDwavcqpPyZTLmw';
 
-type AdminRow = {
-  id: string;
-  email: string;
-  password_hash: string;
-  active: number | string;
-};
-
-export type AdminSession = { id: string; email: string };
+export type AdminSession = { email: string };
 
 function cookieValue(request: Request, name: string) {
   const cookie = request.headers.get('cookie') ?? '';
@@ -23,40 +14,32 @@ function cookieValue(request: Request, name: string) {
   return null;
 }
 
-export async function authenticateCredentials(email: string, password: string) {
-  const result = await getDatabase().execute<AdminRow>(
-    `SELECT id, email, password_hash, active
-     FROM admins WHERE email = ? LIMIT 1`,
-    [email],
-  );
-  const admin = result.rows[0];
-  const validPassword = await verifyPassword(password, admin?.password_hash ?? DUMMY_PASSWORD_HASH);
-  if (!admin || Number(admin.active) !== 1 || !validPassword) return null;
-  return validPassword
-    ? { id: admin.id, email: admin.email }
-    : null;
+export function getSessionToken(request: Request) {
+  const token = cookieValue(request, SESSION_COOKIE);
+  return token && token.length >= 32 && token.length <= 128 ? token : null;
 }
 
-export async function createSession(adminId: string) {
-  const token = randomToken();
-  const tokenHash = await sha256(token);
-  const expiresAt = new Date(Date.now() + SESSION_MAX_AGE_SECONDS * 1_000);
-  await getDatabase().execute(
-    `INSERT INTO admin_sessions (id, admin_id, token_hash, expires_at)
-     VALUES (?, ?, ?, ?)`,
-    [crypto.randomUUID(), adminId, tokenHash, expiresAt.toISOString().slice(0, 23).replace('T', ' ')],
-  );
-  return { token, expiresAt };
+export async function loginAdmin(request: Request, email: string, password: string) {
+  return await backendRequest<{
+    admin: AdminSession;
+    sessionToken: string;
+    expiresIn: number;
+  }>('/admin/login', request, {
+    method: 'POST',
+    body: { email, password },
+  });
 }
 
-export function sessionCookie(token: string, expiresAt: Date) {
+export function sessionCookie(token: string, expiresIn = SESSION_MAX_AGE_SECONDS) {
+  const maxAge = Math.min(Math.max(expiresIn, 60), SESSION_MAX_AGE_SECONDS);
+  const expiresAt = new Date(Date.now() + maxAge * 1_000);
   return [
     `${SESSION_COOKIE}=${encodeURIComponent(token)}`,
     'Path=/',
     'HttpOnly',
     'Secure',
     'SameSite=Strict',
-    `Max-Age=${SESSION_MAX_AGE_SECONDS}`,
+    `Max-Age=${maxAge}`,
     `Expires=${expiresAt.toUTCString()}`,
   ].join('; ');
 }
@@ -66,24 +49,25 @@ export function expiredSessionCookie() {
 }
 
 export async function getAdminSession(request: Request): Promise<AdminSession | null> {
-  const token = cookieValue(request, SESSION_COOKIE);
-  if (!token || token.length > 128) return null;
-  const tokenHash = await sha256(token);
-  const result = await getDatabase().execute<AdminSession>(
-    `SELECT admins.id, admins.email
-     FROM admin_sessions
-     INNER JOIN admins ON admins.id = admin_sessions.admin_id
-     WHERE admin_sessions.token_hash = ?
-       AND admin_sessions.expires_at > CURRENT_TIMESTAMP(3)
-       AND admins.active = 1
-     LIMIT 1`,
-    [tokenHash],
-  );
-  return result.rows[0] ?? null;
+  const token = getSessionToken(request);
+  if (!token) return null;
+  try {
+    const result = await backendRequest<{ admin: AdminSession }>('/admin/session', request, {
+      sessionToken: token,
+    });
+    return result.admin;
+  } catch (error) {
+    if (error instanceof BackendError && error.status === 401) return null;
+    throw error;
+  }
 }
 
 export async function deleteSession(request: Request) {
-  const token = cookieValue(request, SESSION_COOKIE);
-  if (!token || token.length > 128) return;
-  await getDatabase().execute('DELETE FROM admin_sessions WHERE token_hash = ?', [await sha256(token)]);
+  const token = getSessionToken(request);
+  if (!token) return;
+  try {
+    await backendRequest('/admin/logout', request, { method: 'POST', sessionToken: token });
+  } catch (error) {
+    if (!(error instanceof BackendError && error.status === 401)) throw error;
+  }
 }

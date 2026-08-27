@@ -16,7 +16,7 @@ async function authorizedId(request: Request, context: RouteContext) {
 
 export async function GET(request: Request, context: RouteContext) {
   try {
-    const order = await getOrderById(await authorizedId(request, context));
+    const order = await getOrderById(await authorizedId(request, context), request);
     if (!order) throw new RequestError('Sipariş bulunamadı.', 404);
     return json({ order });
   } catch (error) {
@@ -28,7 +28,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   try {
     if (!verifySameOrigin(request)) throw new RequestError('İstek kaynağı doğrulanamadı.', 403);
     const id = await authorizedId(request, context);
-    const order = await updateOrder(id, validateOrderUpdate(await readJson(request)));
+    const order = await updateOrder(id, validateOrderUpdate(await readJson(request)), request);
     if (!order) throw new RequestError('Sipariş bulunamadı.', 404);
     return json({ order });
   } catch (error) {
@@ -39,7 +39,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 export async function DELETE(request: Request, context: RouteContext) {
   try {
     if (!verifySameOrigin(request)) throw new RequestError('İstek kaynağı doğrulanamadı.', 403);
-    const deleted = await deleteOrder(await authorizedId(request, context));
+    const deleted = await deleteOrder(await authorizedId(request, context), request);
     if (!deleted) throw new RequestError('Sipariş bulunamadı.', 404);
     return json({ ok: true });
   } catch (error) {

@@ -1,3 +1,5 @@
+import { BackendError } from './backend';
+
 export function json(data: unknown, status = 200, headers: HeadersInit = {}) {
   return Response.json(data, {
     status,
@@ -46,6 +48,10 @@ export class RequestError extends Error {
 
 export function publicError(error: unknown, fallback: string) {
   if (error instanceof RequestError) return json({ error: error.message }, error.status);
+  if (error instanceof BackendError) {
+    const safeStatus = error.status >= 400 && error.status < 500 ? error.status : 502;
+    return json({ error: safeStatus === 502 ? fallback : error.message }, safeStatus);
+  }
   console.error(fallback, error);
   return json({ error: fallback }, 500);
 }
