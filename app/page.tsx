@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import '../src/style.css';
 import { OrderDrawer } from '../src/components/OrderDrawer';
 import { ProductInfo } from '../src/components/ProductInfo';
 import { SizeGuideModal } from '../src/components/SizeGuideModal';

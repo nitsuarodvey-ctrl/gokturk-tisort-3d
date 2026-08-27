@@ -2,11 +2,10 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import {
-  createOrder,
   DELIVERY_OPTIONS,
   DeliveryType,
-  LocalOrder,
-  persistOrder,
+  Order,
+  orderRepository,
   ProductSize,
   UNIT_PRICE,
 } from '../store/orders';
@@ -24,8 +23,10 @@ export function OrderDrawer({ open, initialSize, initialQuantity, onClose }: Pro
   const [size, setSize] = useState<ProductSize>(initialSize);
   const [quantity, setQuantity] = useState(initialQuantity);
   const [deliveryType, setDeliveryType] = useState<DeliveryType>(DELIVERY_OPTIONS[0]);
-  const [order, setOrder] = useState<LocalOrder | null>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [copied, setCopied] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -46,23 +47,36 @@ export function OrderDrawer({ open, initialSize, initialQuantity, onClose }: Pro
 
   if (!open) return null;
 
-  const submitOrder = (event: FormEvent<HTMLFormElement>) => {
+  const submitOrder = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const nextOrder = createOrder({
-      name: String(data.get('name') ?? '').trim(),
-      phone: String(data.get('phone') ?? '').trim(),
-      size,
-      quantity,
-      deliveryType,
-      city: deliveryType === 'Adrese Kargo' ? String(data.get('city') ?? '').trim() : '',
-      district:
-        deliveryType === 'Adrese Kargo' ? String(data.get('district') ?? '').trim() : '',
-      address:
-        deliveryType === 'Adrese Kargo' ? String(data.get('address') ?? '').trim() : '',
-    });
-    persistOrder(nextOrder);
-    setOrder(nextOrder);
+    setSubmitting(true);
+    setSubmitError('');
+
+    try {
+      const nextOrder = await orderRepository.create({
+        name: String(data.get('name') ?? '').trim(),
+        phone: String(data.get('phone') ?? '').trim(),
+        size,
+        quantity,
+        deliveryType,
+        city: deliveryType === 'Adrese Kargo' ? String(data.get('city') ?? '').trim() : '',
+        district:
+          deliveryType === 'Adrese Kargo' ? String(data.get('district') ?? '').trim() : '',
+        address:
+          deliveryType === 'Adrese Kargo' ? String(data.get('address') ?? '').trim() : '',
+      });
+      setOrder(nextOrder);
+    } catch (error) {
+      console.error('[GUB preorder] Order creation failed:', error);
+      setSubmitError(
+        error instanceof Error && error.message.includes('yapılandırması eksik')
+          ? 'Sipariş sistemi yapılandırılmayı bekliyor. Lütfen daha sonra tekrar deneyin.'
+          : 'Sipariş kaydedilemedi. Lütfen bilgilerinizi kontrol edip tekrar deneyin.',
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const copyIban = async () => {
@@ -169,7 +183,10 @@ export function OrderDrawer({ open, initialSize, initialQuantity, onClose }: Pro
               <span>{UNIT_PRICE} TL × {quantity}</span>
               <strong>{UNIT_PRICE * quantity} TL</strong>
             </div>
-            <button className="primary-cta" type="submit">Siparişi Oluştur</button>
+            {submitError && <p className="form-error" role="alert">{submitError}</p>}
+            <button className="primary-cta" type="submit" disabled={submitting}>
+              {submitting ? 'Kaydediliyor…' : 'Siparişi Oluştur'}
+            </button>
           </form>
         )}
       </aside>
@@ -182,7 +199,7 @@ function OrderSummary({
   copied,
   onCopy,
 }: {
-  order: LocalOrder;
+  order: Order;
   copied: boolean;
   onCopy: () => void;
 }) {

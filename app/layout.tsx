@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import '../src/style.css';
 
 export const metadata: Metadata = {
   title: 'GUB Merch — Siyah Oversize T-Shirt',
