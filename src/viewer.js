@@ -273,7 +273,7 @@ export class TShirtViewer {
     const configuredRotation = new THREE.Euler(
       config.rotation.x,
       config.rotation.y,
-      config.rotation.z,
+      0,
       'XYZ',
     );
     const outwardGuess = new THREE.Vector3(0, 0, 1)
@@ -297,17 +297,20 @@ export class TShirtViewer {
       .clone()
       .applyMatrix3(normalMatrix)
       .normalize();
-    const align = new THREE.Quaternion().setFromUnitVectors(
-      new THREE.Vector3(0, 0, 1),
+    // Anchor the artwork to a stable world-up tangent frame. Projector aim is
+    // used only to find the sleeve; it can no longer roll the printed image.
+    const printYAxis = new THREE.Vector3(0, 1, 0).addScaledVector(
       surfaceNormal,
+      -surfaceNormal.y,
     );
-    const roll = new THREE.Quaternion().setFromAxisAngle(
-      surfaceNormal,
-      config.rotation.z,
-    );
-    const printQuaternion = roll.multiply(align);
-    const printXAxis = new THREE.Vector3(1, 0, 0).applyQuaternion(printQuaternion);
-    const printYAxis = new THREE.Vector3(0, 1, 0).applyQuaternion(printQuaternion);
+    if (printYAxis.lengthSq() < 1e-8) {
+      printYAxis.set(0, 0, 1);
+    } else {
+      printYAxis.normalize();
+    }
+    const printXAxis = new THREE.Vector3()
+      .crossVectors(printYAxis, surfaceNormal)
+      .normalize();
 
     // Derive the local UV-to-world Jacobian from the triangle under the print
     // center. It preserves the existing physical size and orientation while
@@ -352,12 +355,30 @@ export class TShirtViewer {
     const aspect = texture.image.width / texture.image.height;
     const width = this.size.x * config.scale.width;
     const height = width / aspect;
-    const mapUFromU = worldPerU.dot(printXAxis) / width;
-    const mapUFromV = worldPerV.dot(printXAxis) / width;
-    const mapVFromU = worldPerU.dot(printYAxis) / height;
-    const mapVFromV = worldPerV.dot(printYAxis) / height;
+    // The sleeve UV island is rotated relative to world-up. The Jacobian below
+    // removes that authored UV rotation and scale distortion. uvRotation is an
+    // optional final artwork adjustment applied only inside this UV transform.
+    const uvRotation = config.uvRotation ?? 0;
+    const cosUvRotation = Math.cos(uvRotation);
+    const sinUvRotation = Math.sin(uvRotation);
+    const artworkXAxis = printXAxis
+      .clone()
+      .multiplyScalar(cosUvRotation)
+      .addScaledVector(printYAxis, sinUvRotation);
+    const artworkYAxis = printYAxis
+      .clone()
+      .multiplyScalar(cosUvRotation)
+      .addScaledVector(printXAxis, -sinUvRotation);
+    const mapUFromU = worldPerU.dot(artworkXAxis) / width;
+    const mapUFromV = worldPerV.dot(artworkXAxis) / width;
+    const mapVFromU = worldPerU.dot(artworkYAxis) / height;
+    const mapVFromV = worldPerV.dot(artworkYAxis) / height;
     const centerU = hit.uv.x;
     const centerV = hit.uv.y;
+    const uvIslandRotation = Math.atan2(
+      worldPerV.dot(printXAxis),
+      worldPerV.dot(printYAxis),
+    );
 
     texture.matrixAutoUpdate = false;
     texture.wrapS = THREE.ClampToEdgeWrapping;
@@ -406,7 +427,7 @@ export class TShirtViewer {
         `,
       );
     };
-    material.customProgramCacheKey = () => 'sleeve-uv-print-v1';
+    material.customProgramCacheKey = () => 'sleeve-uv-print-v2';
 
     const print = new THREE.Mesh(geometry, material);
     print.name = 'sleeve-print-uv';
@@ -426,6 +447,8 @@ export class TShirtViewer {
       '[T-shirt viewer] sleeve UV print:',
       JSON.stringify({
         center: [centerU, centerV],
+        uvIslandRotation,
+        uvRotation,
         physicalSize: [width, height],
         sourcePixels: [texture.image.width, texture.image.height],
       }),
