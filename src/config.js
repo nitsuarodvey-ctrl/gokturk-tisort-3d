@@ -15,7 +15,7 @@ export const PRINT_CONFIG = {
       x: 0,
       y: Math.PI * 0.4,
     },
-    uvRotation: THREE.MathUtils.degToRad(2),
+    uvRotation: THREE.MathUtils.degToRad(5),
     scale: {
       width: 0.195,
     },
