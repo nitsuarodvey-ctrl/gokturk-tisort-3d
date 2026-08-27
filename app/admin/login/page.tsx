@@ -2,7 +2,6 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { isSupabaseConfigured, requireSupabase } from '../../../src/lib/supabase.js';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -10,10 +9,10 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!isSupabaseConfigured) return;
-    void requireSupabase().auth.getUser().then(({ data }) => {
-      if (data.user?.app_metadata?.role === 'admin') router.replace('/admin');
-    });
+    void fetch('/api/admin/session', { credentials: 'same-origin', cache: 'no-store' })
+      .then((response) => {
+        if (response.ok) router.replace('/admin');
+      });
   }, [router]);
 
   const login = async (event: FormEvent<HTMLFormElement>) => {
@@ -23,24 +22,23 @@ export default function AdminLoginPage() {
 
     try {
       const form = new FormData(event.currentTarget);
-      const client = requireSupabase();
-      const { data, error: authError } = await client.auth.signInWithPassword({
-        email: String(form.get('email') ?? '').trim(),
-        password: String(form.get('password') ?? ''),
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: String(form.get('email') ?? '').trim(),
+          password: String(form.get('password') ?? ''),
+        }),
       });
-      if (authError) throw authError;
-      if (data.user.app_metadata?.role !== 'admin') {
-        await client.auth.signOut();
-        throw new Error('Bu hesap admin yetkisine sahip değil.');
-      }
+      const payload = await response.json().catch(() => ({})) as { error?: string };
+      if (!response.ok) throw new Error(payload.error || 'E-posta veya şifre doğrulanamadı.');
       router.replace('/admin');
     } catch (loginError) {
       setError(
-        loginError instanceof Error && loginError.message.includes('yapılandırması eksik')
-          ? 'Supabase bağlantısı henüz yapılandırılmadı.'
-          : loginError instanceof Error && loginError.message.includes('admin yetkisine')
-            ? loginError.message
-            : 'E-posta veya şifre doğrulanamadı.',
+        loginError instanceof Error
+          ? loginError.message
+          : 'E-posta veya şifre doğrulanamadı.',
       );
     } finally {
       setSubmitting(false);
@@ -52,7 +50,7 @@ export default function AdminLoginPage() {
       <section className="admin-login-panel" aria-labelledby="admin-login-title">
         <p className="eyebrow">GUB MERCH / YÖNETİM</p>
         <h1 id="admin-login-title">Admin Girişi</h1>
-        <p>Sipariş yönetimi yalnızca yetkilendirilmiş Supabase kullanıcılarına açıktır.</p>
+        <p>Sipariş yönetimi yalnızca yetkilendirilmiş admin kullanıcılarına açıktır.</p>
 
         <form onSubmit={login}>
           <label>
@@ -61,10 +59,10 @@ export default function AdminLoginPage() {
           </label>
           <label>
             <span>Şifre</span>
-            <input name="password" type="password" autoComplete="current-password" required />
+            <input name="password" type="password" autoComplete="current-password" maxLength={128} required />
           </label>
           {error && <p className="form-error" role="alert">{error}</p>}
-          <button className="primary-cta" type="submit" disabled={submitting || !isSupabaseConfigured}>
+          <button className="primary-cta" type="submit" disabled={submitting}>
             <span>{submitting ? 'Doğrulanıyor…' : 'Giriş Yap'}</span>
           </button>
         </form>

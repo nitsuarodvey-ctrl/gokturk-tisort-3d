@@ -70,8 +70,8 @@ export function OrderDrawer({ open, initialSize, initialQuantity, onClose }: Pro
     } catch (error) {
       console.error('[GUB preorder] Order creation failed:', error);
       setSubmitError(
-        error instanceof Error && error.message.includes('yapılandırması eksik')
-          ? 'Sipariş sistemi yapılandırılmayı bekliyor. Lütfen daha sonra tekrar deneyin.'
+        error instanceof Error
+          ? error.message
           : 'Sipariş kaydedilemedi. Lütfen bilgilerinizi kontrol edip tekrar deneyin.',
       );
     } finally {
