@@ -252,7 +252,184 @@ export class TShirtViewer {
     });
 
     this.createPrint('chest', chestTexture, PRINT_CONFIG.chest);
-    this.createPrint('sleeve', sleeveTexture, PRINT_CONFIG.sleeve);
+    this.createSleeveUvPrint(sleeveTexture, PRINT_CONFIG.sleeve);
+  }
+
+  createSleeveUvPrint(texture, config) {
+    const geometry = this.mainGarmentMesh.geometry;
+    const uvAttribute = geometry.attributes.uv;
+    const positionAttribute = geometry.attributes.position;
+    if (!uvAttribute || !positionAttribute) {
+      throw new Error('The garment has no UV coordinates for the sleeve print.');
+    }
+
+    // Reuse the tuned world-space controls only to locate the sleeve center.
+    // The artwork itself is mapped through the model's authored UV island.
+    const seed = new THREE.Vector3(
+      this.center.x + config.position.x * (this.size.x * 0.5),
+      this.bounds.min.y + config.position.y * this.size.y,
+      this.center.z + config.position.z * (this.size.z * 0.5),
+    );
+    const configuredRotation = new THREE.Euler(
+      config.rotation.x,
+      config.rotation.y,
+      config.rotation.z,
+      'XYZ',
+    );
+    const outwardGuess = new THREE.Vector3(0, 0, 1)
+      .applyEuler(configuredRotation)
+      .normalize();
+    const rayOrigin = seed
+      .clone()
+      .addScaledVector(outwardGuess, this.size.length() * 0.85);
+    const raycaster = new THREE.Raycaster(rayOrigin, outwardGuess.clone().negate());
+    const intersections = raycaster.intersectObject(this.mainGarmentMesh, false);
+
+    if (!intersections.length || !intersections[0].uv || !intersections[0].face) {
+      throw new Error('Could not locate the sleeve UV island on the garment.');
+    }
+
+    const hit = intersections[0];
+    const normalMatrix = new THREE.Matrix3().getNormalMatrix(
+      this.mainGarmentMesh.matrixWorld,
+    );
+    const surfaceNormal = hit.face.normal
+      .clone()
+      .applyMatrix3(normalMatrix)
+      .normalize();
+    const align = new THREE.Quaternion().setFromUnitVectors(
+      new THREE.Vector3(0, 0, 1),
+      surfaceNormal,
+    );
+    const roll = new THREE.Quaternion().setFromAxisAngle(
+      surfaceNormal,
+      config.rotation.z,
+    );
+    const printQuaternion = roll.multiply(align);
+    const printXAxis = new THREE.Vector3(1, 0, 0).applyQuaternion(printQuaternion);
+    const printYAxis = new THREE.Vector3(0, 1, 0).applyQuaternion(printQuaternion);
+
+    // Derive the local UV-to-world Jacobian from the triangle under the print
+    // center. It preserves the existing physical size and orientation while
+    // allowing the authored sleeve unwrap to carry the PNG around the curve.
+    const a = hit.face.a;
+    const b = hit.face.b;
+    const c = hit.face.c;
+    const uvA = new THREE.Vector2().fromBufferAttribute(uvAttribute, a);
+    const uvB = new THREE.Vector2().fromBufferAttribute(uvAttribute, b);
+    const uvC = new THREE.Vector2().fromBufferAttribute(uvAttribute, c);
+    const worldA = new THREE.Vector3()
+      .fromBufferAttribute(positionAttribute, a)
+      .applyMatrix4(this.mainGarmentMesh.matrixWorld);
+    const worldB = new THREE.Vector3()
+      .fromBufferAttribute(positionAttribute, b)
+      .applyMatrix4(this.mainGarmentMesh.matrixWorld);
+    const worldC = new THREE.Vector3()
+      .fromBufferAttribute(positionAttribute, c)
+      .applyMatrix4(this.mainGarmentMesh.matrixWorld);
+    const deltaUv1 = uvB.clone().sub(uvA);
+    const deltaUv2 = uvC.clone().sub(uvA);
+    const determinant = deltaUv1.x * deltaUv2.y - deltaUv1.y * deltaUv2.x;
+
+    if (Math.abs(determinant) < 1e-8) {
+      throw new Error('The sleeve UV triangle is degenerate.');
+    }
+
+    const inverseDeterminant = 1 / determinant;
+    const edge1 = worldB.clone().sub(worldA);
+    const edge2 = worldC.clone().sub(worldA);
+    const worldPerU = edge1
+      .clone()
+      .multiplyScalar(deltaUv2.y)
+      .addScaledVector(edge2, -deltaUv1.y)
+      .multiplyScalar(inverseDeterminant);
+    const worldPerV = edge2
+      .clone()
+      .multiplyScalar(deltaUv1.x)
+      .addScaledVector(edge1, -deltaUv2.x)
+      .multiplyScalar(inverseDeterminant);
+
+    const aspect = texture.image.width / texture.image.height;
+    const width = this.size.x * config.scale.width;
+    const height = width / aspect;
+    const mapUFromU = worldPerU.dot(printXAxis) / width;
+    const mapUFromV = worldPerV.dot(printXAxis) / width;
+    const mapVFromU = worldPerU.dot(printYAxis) / height;
+    const mapVFromV = worldPerV.dot(printYAxis) / height;
+    const centerU = hit.uv.x;
+    const centerV = hit.uv.y;
+
+    texture.matrixAutoUpdate = false;
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    texture.matrix.set(
+      mapUFromU,
+      mapUFromV,
+      0.5 - mapUFromU * centerU - mapUFromV * centerV,
+      mapVFromU,
+      mapVFromV,
+      0.5 - mapVFromU * centerU - mapVFromV * centerV,
+      0,
+      0,
+      1,
+    );
+
+    const material = new THREE.MeshPhysicalMaterial({
+      map: texture,
+      color: 0xffffff,
+      transparent: true,
+      alphaTest: 0.015,
+      depthTest: true,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -4,
+      polygonOffsetUnits: -4,
+      roughness: 0.84,
+      metalness: 0,
+      sheen: 0.08,
+      sheenColor: new THREE.Color(0x2b2022),
+      sheenRoughness: 0.9,
+      side: THREE.FrontSide,
+    });
+
+    // Sampling is limited to the PNG rectangle so clamped edge pixels cannot
+    // leak onto any other UV region of the otherwise shared garment geometry.
+    material.onBeforeCompile = (shader) => {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <map_fragment>',
+        `
+          if (
+            vMapUv.x < 0.0 || vMapUv.x > 1.0 ||
+            vMapUv.y < 0.0 || vMapUv.y > 1.0
+          ) discard;
+          #include <map_fragment>
+        `,
+      );
+    };
+    material.customProgramCacheKey = () => 'sleeve-uv-print-v1';
+
+    const print = new THREE.Mesh(geometry, material);
+    print.name = 'sleeve-print-uv';
+    print.renderOrder = 3;
+    print.castShadow = false;
+    print.receiveShadow = true;
+    this.mainGarmentMesh.add(print);
+    this.printMeshes.push(print);
+    this.disposables.push(material);
+    this.decalDebug.push({
+      name: 'sleeve',
+      position: hit.point.clone().addScaledVector(surfaceNormal, 0.0008),
+      direction: surfaceNormal,
+    });
+
+    console.info(
+      '[T-shirt viewer] sleeve UV print:',
+      JSON.stringify({
+        center: [centerU, centerV],
+        physicalSize: [width, height],
+        sourcePixels: [texture.image.width, texture.image.height],
+      }),
+    );
   }
 
   createPrint(name, texture, config) {

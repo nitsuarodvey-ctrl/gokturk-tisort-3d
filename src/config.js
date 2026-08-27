@@ -5,8 +5,8 @@ export const DEBUG_DECALS = false;
 /**
  * Positions and sizes are normalized to the fitted garment bounds.
  * position.x/z use half-width/depth units, position.y runs bottom (0) to top (1).
- * rotation.x/y aim the projector; rotation.z rolls the artwork without mirroring it.
- * scale.width/depth are fractions of the garment width/depth; height follows PNG aspect.
+ * rotation.x/y aim the print center; rotation.z rolls without mirroring.
+ * Sleeve depth is intentionally absent because its print uses the garment UVs.
  */
 export const PRINT_CONFIG = {
   chest: {
@@ -15,9 +15,16 @@ export const PRINT_CONFIG = {
     scale: { width: 0.105, depth: 0.12 },
   },
   sleeve: {
-    position: { x: 0.88, y: 0.765, z: 0.16 },
-    rotation: { x: 0, y: Math.PI * 0.34, z: -Math.PI * 0.035 },
-    scale: { width: 0.195, depth: 0.2 },
+    projection: 'uv',
+    position: { x: 0.93, y: 0.74, z: -0.03 },
+    rotation: {
+      x: 0,
+      y: Math.PI * 0.4,
+      z: Math.PI * 0.08,
+    },
+    scale: {
+      width: 0.195,
+    },
   },
 };
 
