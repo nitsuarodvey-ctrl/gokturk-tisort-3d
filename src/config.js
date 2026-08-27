@@ -4,7 +4,7 @@ export const DEBUG_DECALS = false;
 
 export const PRINT_CONFIG = {
   chest: {
-    position: { x: -0.17, y: 0.64, z: 0.2 },
+    position: { x: -0.28, y: 0.72, z: 0.2 },
     rotation: { x: 0, y: 0, z: 0 },
     scale: { width: 0.105, depth: 0.12 },
   },
@@ -15,7 +15,7 @@ export const PRINT_CONFIG = {
       x: 0,
       y: Math.PI * 0.4,
     },
-    uvRotation: THREE.MathUtils.degToRad(5),
+    uvRotation: THREE.MathUtils.degToRad(10),
     scale: {
       width: 0.195,
     },
