@@ -214,8 +214,10 @@ function OrderSummary({
         <div className="summary-total"><dt>Toplam Tutar</dt><dd>{order.total} TL</dd></div>
       </dl>
 
+      <CardPaymentForm order={order} />
+
       <section className="payment-block" aria-labelledby="payment-title">
-        <p className="eyebrow">ÖDEME BİLGİLERİ</p>
+        <p className="eyebrow">ALTERNATİF ÖDEME</p>
         <h3 id="payment-title">Havale ile ödeme</h3>
         <dl>
           <div><dt>Alıcı</dt><dd>Göktürk Güngör</dd></div>
@@ -233,5 +235,81 @@ function OrderSummary({
         </p>
       </section>
     </div>
+  );
+}
+
+function CardPaymentForm({ order }: { order: Order }) {
+  const defaultAddress = [order.address, order.district].filter(Boolean).join(', ');
+
+  return (
+    <section className="payment-block card-payment-block" aria-labelledby="card-payment-title">
+      <p className="eyebrow">GÜVENLİ ÖDEME</p>
+      <h3 id="card-payment-title">Kredi / banka kartı</h3>
+      <p className="card-security-note">
+        Kuveyt Türk 3D Secure doğrulaması kullanılır. Kart bilgileriniz kaydedilmez.
+      </p>
+      <form className="card-payment-form" action="/api/payments" method="post">
+        <input type="hidden" name="orderId" value={order.id} />
+        <label>
+          <span>Kart Üzerindeki İsim</span>
+          <input name="cardHolderName" autoComplete="cc-name" minLength={2} maxLength={45} required />
+        </label>
+        <label>
+          <span>Kart Numarası</span>
+          <input
+            name="cardNumber"
+            inputMode="numeric"
+            autoComplete="cc-number"
+            minLength={13}
+            maxLength={23}
+            placeholder="____ ____ ____ ____"
+            required
+          />
+        </label>
+        <div className="card-grid-three">
+          <label>
+            <span>Ay</span>
+            <input name="expiryMonth" inputMode="numeric" autoComplete="cc-exp-month" maxLength={2} placeholder="AA" required />
+          </label>
+          <label>
+            <span>Yıl</span>
+            <input name="expiryYear" inputMode="numeric" autoComplete="cc-exp-year" maxLength={4} placeholder="YY" required />
+          </label>
+          <label>
+            <span>CVV</span>
+            <input name="cvv" type="password" inputMode="numeric" autoComplete="cc-csc" maxLength={3} required />
+          </label>
+        </div>
+        <label>
+          <span>E-posta</span>
+          <input name="email" type="email" autoComplete="email" maxLength={254} required />
+        </label>
+        <div className="form-pair">
+          <label>
+            <span>Fatura Şehri</span>
+            <input name="billingCity" defaultValue={order.city} autoComplete="address-level1" maxLength={80} required />
+          </label>
+          <label>
+            <span>İl Plaka Kodu</span>
+            <input name="billingState" inputMode="numeric" maxLength={3} placeholder="35" required />
+          </label>
+        </div>
+        <div className="form-pair">
+          <label>
+            <span>Posta Kodu</span>
+            <input name="billingPostalCode" inputMode="numeric" autoComplete="postal-code" maxLength={10} required />
+          </label>
+          <span className="secure-amount">{order.total} TL</span>
+        </div>
+        <label>
+          <span>Fatura Adresi</span>
+          <textarea name="billingAddress" defaultValue={defaultAddress} autoComplete="street-address" maxLength={250} rows={3} required />
+        </label>
+        <button className="primary-cta" type="submit">
+          <span>3D Secure ile Öde</span>
+          <span>{order.total} TL</span>
+        </button>
+      </form>
+    </section>
   );
 }

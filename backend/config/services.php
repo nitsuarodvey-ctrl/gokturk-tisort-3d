@@ -1,8 +1,34 @@
 <?php
 
+$kuveytTurkMode = env('KUVEYT_TURK_MODE', 'production');
+$kuveytTurkTest = $kuveytTurkMode === 'test';
+
 return [
 
     'internal_api_key' => env('INTERNAL_API_KEY'),
+
+    'kuveyt_turk' => [
+        'enabled' => env('KUVEYT_TURK_ENABLED', false),
+        'mode' => $kuveytTurkMode,
+        'customer_id' => env('KUVEYT_TURK_CUSTOMER_ID'),
+        'merchant_id' => env('KUVEYT_TURK_MERCHANT_ID'),
+        'username' => env('KUVEYT_TURK_USERNAME'),
+        'password' => env('KUVEYT_TURK_PASSWORD'),
+        'pay_url' => env(
+            'KUVEYT_TURK_PAY_URL',
+            $kuveytTurkTest
+                ? 'https://boatest.kuveytturk.com.tr/boa.virtualpos.services/Home/ThreeDModelPayGate'
+                : 'https://sanalpos.kuveytturk.com.tr/ServiceGateWay/Home/ThreeDModelPayGate',
+        ),
+        'provision_url' => env(
+            'KUVEYT_TURK_PROVISION_URL',
+            $kuveytTurkTest
+                ? 'https://boatest.kuveytturk.com.tr/boa.virtualpos.services/Home/ThreeDModelProvisionGate'
+                : 'https://sanalpos.kuveytturk.com.tr/ServiceGateWay/Home/ThreeDModelProvisionGate',
+        ),
+        'callback_url' => env('KUVEYT_TURK_CALLBACK_URL'),
+        'return_url' => env('KUVEYT_TURK_RETURN_URL'),
+    ],
 
     /*
     |--------------------------------------------------------------------------

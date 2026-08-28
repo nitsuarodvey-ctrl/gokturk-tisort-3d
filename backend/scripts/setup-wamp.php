@@ -59,6 +59,8 @@ setEnvValues($backendEnv, [
     'INTERNAL_API_KEY' => $internalKey,
     'CACHE_STORE' => 'database',
     'SESSION_DRIVER' => 'database',
+    'KUVEYT_TURK_CALLBACK_URL' => 'http://127.0.0.1:8000/api/v1/payments/kuveyt-turk/callback',
+    'KUVEYT_TURK_RETURN_URL' => 'http://localhost:3000/payment/result',
 ]);
 
 $php = escapeshellarg(PHP_BINARY);

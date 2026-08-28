@@ -94,3 +94,60 @@ export function validateLogin(input: unknown) {
   }
   return { email, password: value.password };
 }
+
+function passesLuhn(cardNumber: string) {
+  let sum = 0;
+  let alternate = false;
+  for (let index = cardNumber.length - 1; index >= 0; index -= 1) {
+    let digit = Number(cardNumber[index]);
+    if (alternate) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+    sum += digit;
+    alternate = !alternate;
+  }
+  return sum % 10 === 0;
+}
+
+export function validatePaymentStart(input: unknown) {
+  const value = objectValue(input);
+  const cardNumber = text(value.cardNumber, 'Kart numarası', 32).replace(/\D/gu, '');
+  if (!/^\d{13,19}$/u.test(cardNumber) || !passesLuhn(cardNumber)) {
+    throw new RequestError('Kart numarası geçersiz.');
+  }
+
+  const expiryMonth = text(value.expiryMonth, 'Son kullanma ayı', 2).padStart(2, '0');
+  const expiryYear = text(value.expiryYear, 'Son kullanma yılı', 4).replace(/\D/gu, '').slice(-2);
+  if (!/^(0[1-9]|1[0-2])$/u.test(expiryMonth) || !/^\d{2}$/u.test(expiryYear)) {
+    throw new RequestError('Kartın son kullanma tarihi geçersiz.');
+  }
+  const fullYear = 2000 + Number(expiryYear);
+  const now = new Date();
+  if (fullYear < now.getFullYear() || (fullYear === now.getFullYear() && Number(expiryMonth) < now.getMonth() + 1)) {
+    throw new RequestError('Kartın son kullanma tarihi geçmiş.');
+  }
+
+  const cvv = text(value.cvv, 'CVV', 4).replace(/\D/gu, '');
+  if (!/^\d{3}$/u.test(cvv)) throw new RequestError('CVV üç haneli olmalıdır.');
+
+  const email = text(value.email, 'E-posta', 254).toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(email)) throw new RequestError('E-posta geçersiz.');
+
+  const billingState = text(value.billingState, 'İl kodu', 3).replace(/\D/gu, '');
+  if (!/^\d{1,3}$/u.test(billingState)) throw new RequestError('İl kodu geçersiz.');
+
+  return {
+    orderId: text(value.orderId, 'Sipariş', 36),
+    cardHolderName: text(value.cardHolderName, 'Kart sahibi', 45),
+    cardNumber,
+    expiryMonth,
+    expiryYear,
+    cvv,
+    email,
+    billingCity: text(value.billingCity, 'Fatura şehri', 80),
+    billingState,
+    billingPostalCode: text(value.billingPostalCode, 'Posta kodu', 10),
+    billingAddress: text(value.billingAddress, 'Fatura adresi', 250),
+  };
+}
