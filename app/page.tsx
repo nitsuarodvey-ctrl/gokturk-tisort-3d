@@ -1,126 +1,162 @@
+/* eslint-disable @next/next/no-html-link-for-pages */
 import Image from 'next/image';
 import { UNIT_PRICE } from '../src/store/orders';
 
-const featuredProduct = {
-  href: '/urun/gub-oversize-tisort',
-  name: 'Siyah Oversize T-Shirt',
-  edition: 'Drop 001',
-  price: UNIT_PRICE,
-};
+const productHref = '/urun/gub-oversize-tisort';
+
+function Brand() {
+  return (
+    <a className="shop-brand" href="/" aria-label="Göktürk Ulusal Birliği mağaza ana sayfası">
+      <Image src="/ufaklogo.png" alt="" width={48} height={40} priority />
+      <span>
+        <strong>GÖKTÜRK ULUSAL BİRLİĞİ</strong>
+        <small>RESMÎ MERCH MAĞAZASI</small>
+      </span>
+    </a>
+  );
+}
 
 export default function ShopHome() {
   return (
-    <main className="merch-home">
-      <header className="merch-header">
-        <a className="merch-brand" href="/" aria-label="GUB Merch ana sayfa">
-          <Image src="/ufaklogo.png" alt="" width={44} height={36} priority />
-          <span>
-            <strong>GUB</strong>
-            <small>MERCH</small>
-          </span>
-        </a>
-
-        <nav className="merch-nav" aria-label="Ana menü">
-          <a href="#urunler">Ürünler</a>
-          <a href="#manifesto">Hakkımızda</a>
+    <main className="shop-shell">
+      <header className="shop-header">
+        <Brand />
+        <nav className="shop-nav" aria-label="Ana menü">
+          <a href="#urun">Ürün</a>
+          <a href="#siparis">Sipariş</a>
+          <a href="/bilgi">Bilgi</a>
         </nav>
-
-        <span className="merch-edition">RESMÎ MAĞAZA / 2026</span>
+        <a className="shop-header-action" href={productHref}>Ürünü incele <span>↗</span></a>
       </header>
 
-      <section className="merch-hero" aria-labelledby="merch-hero-title">
-        <div className="hero-copy">
-          <p className="eyebrow">GÖKTÜRK ULUSAL BİRLİĞİ / MERCH</p>
-          <h1 id="merch-hero-title">
-            Birliğin ruhunu
-            <span>üzerinde taşı.</span>
-          </h1>
-          <p className="hero-intro">
-            Göktürk Ulusal Birliği için hazırlanan sınırlı üretim parçalar.
-            İlk koleksiyon siyah oversize tişört ile başlıyor.
+      <section className="shop-hero" aria-labelledby="shop-title">
+        <div className="shop-hero-copy">
+          <p className="shop-kicker"><span /> RESMÎ KOLEKSİYON / DROP 001</p>
+          <h1 id="shop-title">Birliğin<br /><em>işaretini</em><br />taşı.</h1>
+          <p className="shop-lead">
+            Göktürk Ulusal Birliği için tasarlanan ilk resmî parça.
+            Sınırlı üretim siyah oversize tişört şimdi ön siparişte.
           </p>
-          <div className="hero-actions">
-            <a className="hero-primary" href="#urunler">Koleksiyonu gör</a>
-            <a className="hero-secondary" href={featuredProduct.href}>3D incele <span>↗</span></a>
+          <div className="shop-actions">
+            <a className="shop-button shop-button-primary" href={productHref}>3D incele ve sipariş ver</a>
+            <a className="shop-text-link" href="/bilgi">Sipariş bilgileri <span>→</span></a>
           </div>
+
+          <dl className="shop-hero-facts">
+            <div><dt>Fiyat</dt><dd>{UNIT_PRICE} TL</dd></div>
+            <div><dt>Kesim</dt><dd>Oversize</dd></div>
+            <div><dt>Üretim</dt><dd>Sipariş üzerine</dd></div>
+          </dl>
         </div>
 
-        <div className="hero-emblem" aria-hidden="true">
-          <span className="hero-orbit hero-orbit-outer" />
-          <span className="hero-orbit hero-orbit-inner" />
-          <Image src="/büyüklogo.png" alt="" width={760} height={760} priority />
-          <span className="hero-drop-number">001</span>
-        </div>
-
-        <div className="hero-index" aria-hidden="true">
-          <span>01</span>
-          <i />
-          <span>02</span>
+        <div className="shop-hero-product" aria-label="Siyah oversize tişört görsel sunumu">
+          <span className="shop-hero-word" aria-hidden="true">GUB</span>
+          <span className="shop-edition-label">001 / İLK SERİ</span>
+          <div className="shop-shirt" aria-hidden="true">
+            <span className="shop-shirt-sleeve shop-shirt-sleeve-left" />
+            <span className="shop-shirt-sleeve shop-shirt-sleeve-right">
+              <Image src="/büyüklogo.png" alt="" width={86} height={86} />
+            </span>
+            <span className="shop-shirt-body">
+              <Image src="/ufaklogo.png" alt="" width={112} height={90} />
+            </span>
+            <span className="shop-shirt-neck" />
+          </div>
+          <div className="shop-product-stamp">
+            <Image src="/büyüklogo.png" alt="" width={98} height={98} />
+          </div>
+          <span className="shop-stock-badge"><i /> ÖN SİPARİŞ AÇIK</span>
         </div>
       </section>
 
-      <section className="collection-section" id="urunler" aria-labelledby="collection-title">
-        <div className="collection-heading">
-          <div>
-            <p className="eyebrow">KOLEKSİYON / DROP 001</p>
-            <h2 id="collection-title">Şimdi satışta</h2>
-          </div>
-          <p>İlk parça. Sınırlı üretim.<br />Yeni ürünler yakında.</p>
-        </div>
+      <div className="shop-marquee" aria-hidden="true">
+        <span>GÖKTÜRK ULUSAL BİRLİĞİ</span><i>✦</i>
+        <span>RESMÎ MERCH</span><i>✦</i>
+        <span>DROP 001</span><i>✦</i>
+        <span>SINIRLI ÜRETİM</span>
+      </div>
 
-        <div className="product-grid">
-          <a className="featured-product-card" href={featuredProduct.href}>
-            <div className="product-art" aria-hidden="true">
-              <span className="product-art-grid" />
-              <div className="shirt-art">
-                <span className="shirt-body">
-                  <Image src="/ufaklogo.png" alt="" width={114} height={92} />
-                </span>
-                <span className="shirt-sleeve shirt-sleeve-left" />
-                <span className="shirt-sleeve shirt-sleeve-right" />
-                <span className="shirt-neck" />
-              </div>
-              <span className="product-view-badge">360° Görünüm</span>
-              <span className="product-number">01</span>
-            </div>
+      <section className="shop-product-section" id="urun" aria-labelledby="product-heading">
+        <header className="shop-section-heading">
+          <p>01 / TEK ÜRÜN</p>
+          <h2 id="product-heading">İlk koleksiyon.<br />Tek ve net.</h2>
+          <span>Yeni ürünler eklenene kadar mağazanın odağında yalnızca bu parça var.</span>
+        </header>
 
-            <div className="product-card-copy">
-              <div>
-                <p>{featuredProduct.edition}</p>
-                <h3>{featuredProduct.name}</h3>
-              </div>
-              <div className="product-card-price">
-                <strong>{featuredProduct.price} TL</strong>
-                <span>Ürünü incele ↗</span>
-              </div>
+        <article className="shop-product-card">
+          <a className="shop-product-visual" href={productHref} aria-label="Siyah oversize tişörtü 3D incele">
+            <span className="shop-grid" />
+            <span className="shop-visual-index">DROP<br /><b>001</b></span>
+            <div className="shop-shirt shop-shirt-card" aria-hidden="true">
+              <span className="shop-shirt-sleeve shop-shirt-sleeve-left" />
+              <span className="shop-shirt-sleeve shop-shirt-sleeve-right">
+                <Image src="/büyüklogo.png" alt="" width={76} height={76} />
+              </span>
+              <span className="shop-shirt-body">
+                <Image src="/ufaklogo.png" alt="" width={112} height={90} />
+              </span>
+              <span className="shop-shirt-neck" />
             </div>
+            <span className="shop-view-pill">360° CANLI ÜRÜN GÖRÜNÜMÜ ↗</span>
           </a>
 
-          <div className="coming-product-card" aria-label="Yeni ürün yakında">
-            <span>02</span>
-            <p>Yeni parça<br />yakında</p>
+          <div className="shop-product-info">
+            <p className="shop-kicker"><span /> GUB MERCH / DROP 001</p>
+            <h3>Siyah Oversize<br />T-Shirt</h3>
+            <p className="shop-product-description">
+              Göğüste kırmızı çift başlı kartal, sağ kolda Göktürk Ulusal Birliği arması.
+              Güçlü, sade ve gündelik kullanıma uygun bir birlik parçası.
+            </p>
+            <ul className="shop-specs" aria-label="Ürün özellikleri">
+              <li><span>01</span> Oversize kalıp</li>
+              <li><span>02</span> Siyah kumaş</li>
+              <li><span>03</span> S — XL beden</li>
+              <li><span>04</span> Sipariş üzerine üretim</li>
+            </ul>
+            <div className="shop-product-buy">
+              <div><small>ÖN SİPARİŞ FİYATI</small><strong>{UNIT_PRICE} TL</strong></div>
+              <a className="shop-button shop-button-primary" href={productHref}>Beden seç ve sipariş ver</a>
+            </div>
           </div>
+        </article>
+      </section>
+
+      <section className="shop-order-section" id="siparis" aria-labelledby="order-heading">
+        <div className="shop-order-title">
+          <p>NASIL ÇALIŞIR?</p>
+          <h2 id="order-heading">Üç adımda<br />sipariş.</h2>
+          <a className="shop-text-link" href="/bilgi">Tüm sipariş ve teslimat bilgileri <span>→</span></a>
+        </div>
+        <ol className="shop-steps">
+          <li><span>01</span><h3>Ürünü incele</h3><p>3D görünümde ön, arka ve kol baskılarını ayrıntılı olarak gör.</p></li>
+          <li><span>02</span><h3>Seçimini yap</h3><p>Bedenini, adedi ve sana uygun teslimat yöntemini belirle.</p></li>
+          <li><span>03</span><h3>Siparişi tamamla</h3><p>Bilgilerini gönder; kartla 3D Secure veya havale ile ödemeni tamamla.</p></li>
+        </ol>
+      </section>
+
+      <section className="shop-association" aria-labelledby="association-heading">
+        <div className="shop-association-mark">
+          <Image src="/büyüklogo.png" alt="Göktürk Ulusal Birliği arması" width={280} height={280} />
+        </div>
+        <div>
+          <p>GÖKTÜRK ULUSAL BİRLİĞİ</p>
+          <h2 id="association-heading">Bir fikrin etrafında,<br />aynı işaret altında.</h2>
+          <p className="shop-association-copy">
+            GUB Merch, derneğin kimliğini gündelik hayata taşıyan resmî ürünler için kuruldu.
+            Her parça küçük seriler hâlinde ve sipariş odaklı hazırlanır.
+          </p>
+          <a className="shop-text-link" href="/bilgi">Mağaza hakkında <span>→</span></a>
         </div>
       </section>
 
-      <section className="merch-manifesto" id="manifesto">
-        <p className="eyebrow">BİRLİKTEN DOĞAN TASARIM</p>
-        <blockquote>
-          Sadece bir ürün değil.<br />Aynı fikri taşıyanların işareti.
-        </blockquote>
-        <p>
-          Her parça derneğin kimliğini gündelik hayata taşımak için tasarlanır.
-          Küçük seriler hâlinde, sipariş üzerine üretilir.
-        </p>
-      </section>
-
-      <footer className="merch-footer">
-        <div className="merch-brand footer-brand">
-          <Image src="/ufaklogo.png" alt="" width={40} height={32} />
-          <span><strong>GUB</strong><small>MERCH</small></span>
+      <footer className="shop-footer">
+        <Brand />
+        <div className="shop-footer-links">
+          <a href={productHref}>Ürün</a>
+          <a href="/bilgi">Bilgi</a>
+          <a href="/admin/login">Yönetim</a>
         </div>
-        <p>Göktürk Ulusal Birliği resmî ürün mağazası.</p>
-        <span>© 2026</span>
+        <p>© 2026 GÖKTÜRK ULUSAL BİRLİĞİ</p>
       </footer>
     </main>
   );
