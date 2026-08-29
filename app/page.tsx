@@ -52,19 +52,14 @@ export default function ShopHome() {
         <div className="shop-hero-product" aria-label="Siyah oversize tişört görsel sunumu">
           <span className="shop-hero-word" aria-hidden="true">GUB</span>
           <span className="shop-edition-label">001 / İLK SERİ</span>
-          <div className="shop-shirt" aria-hidden="true">
-            <span className="shop-shirt-sleeve shop-shirt-sleeve-left" />
-            <span className="shop-shirt-sleeve shop-shirt-sleeve-right">
-              <Image src="/büyüklogo.png" alt="" width={86} height={86} />
-            </span>
-            <span className="shop-shirt-body">
-              <Image src="/ufaklogo.png" alt="" width={112} height={90} />
-            </span>
-            <span className="shop-shirt-neck" />
-          </div>
-          <div className="shop-product-stamp">
-            <Image src="/büyüklogo.png" alt="" width={98} height={98} />
-          </div>
+          <Image
+            className="shop-product-photo shop-product-photo-hero"
+            src="/gub-tshirt-front.png"
+            alt="Göktürk Ulusal Birliği siyah oversize tişört"
+            width={933}
+            height={827}
+            priority
+          />
           <span className="shop-stock-badge"><i /> ÖN SİPARİŞ AÇIK</span>
         </div>
       </section>
@@ -87,16 +82,13 @@ export default function ShopHome() {
           <a className="shop-product-visual" href={productHref} aria-label="Siyah oversize tişörtü 3D incele">
             <span className="shop-grid" />
             <span className="shop-visual-index">DROP<br /><b>001</b></span>
-            <div className="shop-shirt shop-shirt-card" aria-hidden="true">
-              <span className="shop-shirt-sleeve shop-shirt-sleeve-left" />
-              <span className="shop-shirt-sleeve shop-shirt-sleeve-right">
-                <Image src="/büyüklogo.png" alt="" width={76} height={76} />
-              </span>
-              <span className="shop-shirt-body">
-                <Image src="/ufaklogo.png" alt="" width={112} height={90} />
-              </span>
-              <span className="shop-shirt-neck" />
-            </div>
+            <Image
+              className="shop-product-photo shop-product-photo-card"
+              src="/gub-tshirt-front.png"
+              alt="Göktürk Ulusal Birliği siyah oversize tişört"
+              width={933}
+              height={827}
+            />
             <span className="shop-view-pill">360° CANLI ÜRÜN GÖRÜNÜMÜ ↗</span>
           </a>
 
