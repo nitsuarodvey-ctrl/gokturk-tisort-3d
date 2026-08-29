@@ -3,23 +3,23 @@ import './globals.css';
 import '../src/style.css';
 
 export const metadata: Metadata = {
-  title: 'GUB Merch — Siyah Oversize T-Shirt',
+  title: 'GUB Merch — Resmî Mağaza',
   description:
-    'GUB Merch Drop 001 siyah oversize tişört ön sipariş sayfası ve etkileşimli 360° ürün görünümü.',
+    'Göktürk Ulusal Birliği resmî ürün mağazası. Sınırlı üretim giyim ve aksesuar koleksiyonları.',
   icons: {
     icon: '/ufaklogo.png',
   },
   openGraph: {
-    title: 'GUB Merch — Siyah Oversize T-Shirt',
+    title: 'GUB Merch — Resmî Mağaza',
     description:
-      'Drop 001 siyah oversize tişört. Ön sipariş ve etkileşimli 360° ürün görünümü.',
+      'Göktürk Ulusal Birliği sınırlı üretim giyim ve aksesuar koleksiyonları.',
     type: 'website',
   },
   twitter: {
     card: 'summary',
-    title: 'GUB Merch — Siyah Oversize T-Shirt',
+    title: 'GUB Merch — Resmî Mağaza',
     description:
-      'Drop 001 siyah oversize tişört ön siparişi.',
+      'Göktürk Ulusal Birliği sınırlı üretim ürünleri.',
   },
 };
 
