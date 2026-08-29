@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { OrderDrawer } from './OrderDrawer';
 import { ProductInfo } from './ProductInfo';
@@ -66,7 +65,7 @@ export function ProductExperience() {
 
   return (
     <main className="storefront">
-      <Link className="viewer-home-link" href="/">← Mağaza</Link>
+      <a className="viewer-home-link" href="/">← Mağaza</a>
       <section className="viewer-stage" aria-label="Ürün 3D görünümü">
         <div ref={containerRef} className="viewer-canvas" />
 

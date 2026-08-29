@@ -1,5 +1,4 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import { UNIT_PRICE } from '../src/store/orders';
 
 const featuredProduct = {
@@ -13,13 +12,13 @@ export default function ShopHome() {
   return (
     <main className="merch-home">
       <header className="merch-header">
-        <Link className="merch-brand" href="/" aria-label="GUB Merch ana sayfa">
+        <a className="merch-brand" href="/" aria-label="GUB Merch ana sayfa">
           <Image src="/ufaklogo.png" alt="" width={44} height={36} priority />
           <span>
             <strong>GUB</strong>
             <small>MERCH</small>
           </span>
-        </Link>
+        </a>
 
         <nav className="merch-nav" aria-label="Ana menü">
           <a href="#urunler">Ürünler</a>
@@ -42,7 +41,7 @@ export default function ShopHome() {
           </p>
           <div className="hero-actions">
             <a className="hero-primary" href="#urunler">Koleksiyonu gör</a>
-            <Link className="hero-secondary" href={featuredProduct.href}>3D incele <span>↗</span></Link>
+            <a className="hero-secondary" href={featuredProduct.href}>3D incele <span>↗</span></a>
           </div>
         </div>
 
@@ -70,7 +69,7 @@ export default function ShopHome() {
         </div>
 
         <div className="product-grid">
-          <Link className="featured-product-card" href={featuredProduct.href}>
+          <a className="featured-product-card" href={featuredProduct.href}>
             <div className="product-art" aria-hidden="true">
               <span className="product-art-grid" />
               <div className="shirt-art">
@@ -95,7 +94,7 @@ export default function ShopHome() {
                 <span>Ürünü incele ↗</span>
               </div>
             </div>
-          </Link>
+          </a>
 
           <div className="coming-product-card" aria-label="Yeni ürün yakında">
             <span>02</span>
