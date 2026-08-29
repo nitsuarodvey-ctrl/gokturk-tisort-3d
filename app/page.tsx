@@ -56,8 +56,8 @@ export default function ShopHome() {
             className="shop-product-photo shop-product-photo-hero"
             src="/gub-tshirt-front.png"
             alt="Göktürk Ulusal Birliği siyah oversize tişört"
-            width={933}
-            height={827}
+            width={1254}
+            height={1254}
             priority
           />
           <span className="shop-stock-badge"><i /> ÖN SİPARİŞ AÇIK</span>
@@ -86,8 +86,8 @@ export default function ShopHome() {
               className="shop-product-photo shop-product-photo-card"
               src="/gub-tshirt-front.png"
               alt="Göktürk Ulusal Birliği siyah oversize tişört"
-              width={933}
-              height={827}
+              width={1254}
+              height={1254}
             />
             <span className="shop-view-pill">360° CANLI ÜRÜN GÖRÜNÜMÜ ↗</span>
           </a>

@@ -18,8 +18,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: 'https://gokturk-tisort-3d.sirloliletisim.chatgpt.site/gub-tshirt-front.png',
-        width: 933,
-        height: 827,
+        width: 1254,
+        height: 1254,
         alt: 'Göktürk Ulusal Birliği siyah oversize tişört',
       },
     ],
