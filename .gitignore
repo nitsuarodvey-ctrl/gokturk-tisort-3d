@@ -37,3 +37,8 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+
+# cPanel secrets and release archives
+/api/config.php
+/release/
+*.zip
