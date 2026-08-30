@@ -8,7 +8,12 @@
       window.location.replace('sepet.html');
       return;
     }
-    items.forEach((item) => $target.append(`<div class="summary-row"><span>${item.name} · ${item.size} × ${item.quantity}</span><strong>${window.Shop.money(item.price * item.quantity)}</strong></div>`));
+    items.forEach((item) => {
+      const $row = $('<div>').addClass('summary-row');
+      $('<span>').text(`${item.name} · ${item.size} × ${item.quantity}`).appendTo($row);
+      $('<strong>').text(window.Shop.money(item.price * item.quantity)).appendTo($row);
+      $target.append($row);
+    });
     $('[data-subtotal], [data-total]').text(window.Shop.money(window.Shop.subtotal()));
   }
 

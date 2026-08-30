@@ -9,6 +9,7 @@
     price: 499,
     image: 'assets/img/selcuk-tshirt.png'
   });
+  const SIZES = Object.freeze(['S', 'M', 'L', 'XL']);
 
   const money = (value) => `${new Intl.NumberFormat('tr-TR', {
     maximumFractionDigits: 0
@@ -17,7 +18,20 @@
   function getCart() {
     try {
       const parsed = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-      return Array.isArray(parsed) ? parsed.filter((item) => item && item.id === PRODUCT.id) : [];
+      if (!Array.isArray(parsed)) return [];
+      const normalized = [];
+      parsed.forEach((item) => {
+        if (!item || item.id !== PRODUCT.id || !SIZES.includes(item.size)) return;
+        const quantity = Number.parseInt(item.quantity, 10);
+        if (!Number.isInteger(quantity) || quantity < 1) return;
+        const remaining = 10 - normalized.reduce((sum, entry) => sum + entry.quantity, 0);
+        if (remaining < 1) return;
+        const acceptedQuantity = Math.min(quantity, remaining);
+        const existing = normalized.find((entry) => entry.size === item.size);
+        if (existing) existing.quantity += acceptedQuantity;
+        else normalized.push({ ...PRODUCT, size: item.size, quantity: acceptedQuantity });
+      });
+      return normalized;
     } catch (_) {
       return [];
     }
@@ -29,24 +43,32 @@
   }
 
   function addToCart(size, quantity) {
+    if (!SIZES.includes(size)) return getCart();
     const qty = Math.max(1, Math.min(10, Number(quantity) || 1));
     const items = getCart();
+    const available = 10 - items.reduce((sum, item) => sum + item.quantity, 0);
+    if (available < 1) return items;
+    const acceptedQuantity = Math.min(qty, available);
     const existing = items.find((item) => item.id === PRODUCT.id && item.size === size);
-    if (existing) existing.quantity = Math.min(10, existing.quantity + qty);
-    else items.push({ ...PRODUCT, size, quantity: qty });
+    if (existing) existing.quantity += acceptedQuantity;
+    else items.push({ ...PRODUCT, size, quantity: acceptedQuantity });
     saveCart(items);
     return items;
   }
 
   function updateItem(size, quantity) {
-    const qty = Math.max(0, Math.min(10, Number(quantity) || 0));
-    const items = getCart()
+    if (!SIZES.includes(size)) return;
+    const items = getCart();
+    const otherQuantity = items.filter((item) => item.size !== size).reduce((sum, item) => sum + item.quantity, 0);
+    const qty = Math.max(0, Math.min(10 - otherQuantity, Number(quantity) || 0));
+    const updatedItems = items
       .map((item) => item.size === size ? { ...item, quantity: qty } : item)
       .filter((item) => item.quantity > 0);
-    saveCart(items);
+    saveCart(updatedItems);
   }
 
   function removeItem(size) {
+    if (!SIZES.includes(size)) return;
     saveCart(getCart().filter((item) => item.size !== size));
   }
 

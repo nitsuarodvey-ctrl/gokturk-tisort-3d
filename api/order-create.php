@@ -12,14 +12,15 @@ $surname = textValue($data, 'surname', 60);
 $phone = textValue($data, 'phone', 20);
 $email = strtolower((string) textValue($data, 'email', 190));
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) respond(422, ['ok' => false, 'message' => 'Geçerli bir e-posta adresi girin.']);
-if (strlen(normalizePhone((string) $phone)) < 10) respond(422, ['ok' => false, 'message' => 'Geçerli bir telefon numarası girin.']);
+$normalizedPhone = normalizePhone((string) $phone);
+if (strlen($normalizedPhone) < 10 || strlen($normalizedPhone) > 15) respond(422, ['ok' => false, 'message' => 'Geçerli bir telefon numarası girin.']);
 
 $deliveryType = (string) ($data['delivery_type'] ?? '');
 if (!in_array($deliveryType, ['cargo', 'pickup'], true)) respond(422, ['ok' => false, 'message' => 'Geçerli bir teslimat yöntemi seçin.']);
-$city = textValue($data, 'city', 80, $deliveryType === 'cargo');
-$district = textValue($data, 'district', 80, $deliveryType === 'cargo');
-$address = textValue($data, 'address', 600, $deliveryType === 'cargo');
-$postalCode = textValue($data, 'postal_code', 12, false);
+$city = $deliveryType === 'cargo' ? textValue($data, 'city', 80) : null;
+$district = $deliveryType === 'cargo' ? textValue($data, 'district', 80) : null;
+$address = $deliveryType === 'cargo' ? textValue($data, 'address', 600) : null;
+$postalCode = $deliveryType === 'cargo' ? textValue($data, 'postal_code', 12, false) : null;
 $notes = textValue($data, 'notes', 500, false);
 
 $itemsInput = $data['items'] ?? null;
@@ -38,13 +39,13 @@ foreach ($itemsInput as $item) {
 }
 if ($totalQuantity > 10) respond(422, ['ok' => false, 'message' => 'Bir siparişte en fazla 10 ürün olabilir.']);
 $total = $unitPrice * $totalQuantity;
-$orderNumber = 'SEL-' . date('ymd') . '-' . strtoupper(bin2hex(random_bytes(4)));
+$orderNumber = 'SEL-' . date('ymd') . '-' . strtoupper(bin2hex(random_bytes(6)));
 
 $pdo = database();
 try {
     $pdo->beginTransaction();
     $statement = $pdo->prepare('INSERT INTO orders (order_number, name, surname, phone, phone_normalized, email, delivery_type, city, district, address, postal_code, notes, unit_price, total, payment_status, order_status, delivery_status) VALUES (:order_number, :name, :surname, :phone, :phone_normalized, :email, :delivery_type, :city, :district, :address, :postal_code, :notes, :unit_price, :total, :payment_status, :order_status, :delivery_status)');
-    $statement->execute(['order_number' => $orderNumber, 'name' => $name, 'surname' => $surname, 'phone' => $phone, 'phone_normalized' => normalizePhone((string) $phone), 'email' => $email, 'delivery_type' => $deliveryType, 'city' => $city, 'district' => $district, 'address' => $address, 'postal_code' => $postalCode, 'notes' => $notes, 'unit_price' => $unitPrice, 'total' => $total, 'payment_status' => 'waiting', 'order_status' => 'received', 'delivery_status' => 'pending']);
+    $statement->execute(['order_number' => $orderNumber, 'name' => $name, 'surname' => $surname, 'phone' => $phone, 'phone_normalized' => $normalizedPhone, 'email' => $email, 'delivery_type' => $deliveryType, 'city' => $city, 'district' => $district, 'address' => $address, 'postal_code' => $postalCode, 'notes' => $notes, 'unit_price' => $unitPrice, 'total' => $total, 'payment_status' => 'waiting', 'order_status' => 'received', 'delivery_status' => 'pending']);
     $orderId = (int) $pdo->lastInsertId();
     $itemStatement = $pdo->prepare('INSERT INTO order_items (order_id, product_id, product_name, size, quantity, unit_price, line_total) VALUES (:order_id, :product_id, :product_name, :size, :quantity, :unit_price, :line_total)');
     foreach ($items as $item) $itemStatement->execute(['order_id' => $orderId] + $item);

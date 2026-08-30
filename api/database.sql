@@ -48,3 +48,13 @@ CREATE TABLE contact_messages (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id), KEY contact_messages_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE rate_limits (
+  bucket VARCHAR(60) NOT NULL,
+  key_hash CHAR(64) NOT NULL,
+  window_started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  request_count INT UNSIGNED NOT NULL DEFAULT 1,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (bucket, key_hash),
+  KEY rate_limits_updated_at (updated_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -1,7 +1,6 @@
 (function ($) {
   'use strict';
   const labels = { received: 'Sipariş alındı', preparing: 'Hazırlanıyor', shipped: 'Kargoya verildi', delivered: 'Teslim edildi', cancelled: 'İptal edildi' };
-  const order = ['received', 'preparing', 'ready', 'shipped', 'delivered'];
 
   $(function () {
     $('#tracking-form').on('submit', async function (event) {

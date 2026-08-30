@@ -7,17 +7,19 @@ Build işlemi gerektirmeyen HTML5, CSS3, Bootstrap 5, jQuery ve PHP/MySQL mağaz
 1. Projedeki dosya ve klasörleri `public_html` içine yükleyin.
 2. cPanel > MySQL Databases bölümünden veritabanı ve sınırlı yetkili bir kullanıcı oluşturun.
 3. phpMyAdmin üzerinden `api/database.sql` dosyasını içe aktarın.
-4. `api/config.example.php` dosyasını `api/config.php` adıyla kopyalayıp yalnızca veritabanı bilgilerini girin.
-5. `api/config.php` dosya iznini mümkünse `600`, diğer PHP dosyalarını `644` yapın.
+4. `.env.example` içeriğini `public_html` klasörünün **bir üstündeki** `.env` dosyasına yazın; alan adı, veritabanı ve yönetici değerlerini doldurun. `APP_KEY` için kriptografik olarak rastgele en az 32 karakter kullanın. Üretim modu, sır içeren `.env` dosyasının proje/web dizini içinde bulunmasını bilinçli olarak reddeder.
+5. Dışarıdaki `.env` dosya iznini mümkünse `600`, PHP dosyalarını `644` yapın.
 6. Alan adında geçerli SSL sertifikasını etkinleştirin ve PHP 8.1 veya üstünü seçin.
 7. `teslimat.html`, `iletisim.html` ve hukuki sayfalardaki açık bilgi alanlarını yetkili/hukuk danışmanı onayıyla doldurun.
-8. Yönetim girişi için `api/config.php` içindeki `admin.email` değerini ve PHP `password_hash()` ile üretilmiş `admin.password_hash` değerini ayarlayın. Yönetim adresi `/admin/login.php` olur.
+8. Yönetim girişi için `.env` içindeki `ADMIN_EMAIL` değerini ve PHP `password_hash($parola, PASSWORD_DEFAULT, ['cost' => 12])` ile üretilmiş `ADMIN_PASSWORD_HASH` değerini ayarlayın. Yönetim adresi `/admin/login.php` olur.
 
-`api/config.php` kaynak kod deposuna alınmaz ve web üzerinden `.htaccess` ile engellenir. Sipariş fiyatı tarayıcıdan kabul edilmez; sunucuda 499 TL üzerinden yeniden hesaplanır. Kart verisi bu projede alınmaz veya saklanmaz.
+`.env` kaynak kod deposuna alınmaz ve web kökünün dışında tutulur. Üretimde `APP_URL` mutlaka `https://` ile başlamalı ve `SESSION_SECURE=true` olmalıdır. Sipariş fiyatı tarayıcıdan kabul edilmez; sunucuda 499 TL üzerinden yeniden hesaplanır. Kart verisi bu projede alınmaz veya saklanmaz.
 
 ## Ödeme entegrasyonu
 
-Sipariş kaydı `api/order-create.php` içinde gerçek MySQL işlemiyle oluşturulur. Ödeme kuruluşu bağlanacağı zaman sipariş kaydından sonra sağlayıcının sunucu tarafı başlatma adresine yönlendirme eklenmelidir. Gizli anahtarlar yalnızca `api/config.php` içinde tutulmalı, JavaScript'e yazılmamalıdır. Sağlayıcının imza doğrulaması yapılmadan `payment_status` değeri `paid` yapılmamalıdır.
+Sipariş kaydı `api/order-create.php` içinde gerçek MySQL işlemiyle oluşturulur. Ödeme kuruluşu bağlanacağı zaman sipariş kaydından sonra sağlayıcının sunucu tarafı başlatma adresine yönlendirme eklenmelidir. Gizli anahtarlar yalnızca `.env` içinde tutulmalı, JavaScript'e yazılmamalıdır. Sağlayıcının imza doğrulaması yapılmadan `payment_status` değeri `paid` yapılmamalıdır.
+
+Mevcut bir kurulumu güncelliyorsanız `api/migrations/20260830_security_hardening.sql` dosyasını bir kez içe aktarın. Yeni kurulumlarda yalnızca güncel `api/database.sql` yeterlidir.
 
 ## Dosyalar
 
