@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { json } from '../src/server/http';
+import { sessionCookie } from '../src/server/sessions';
 import { validateNewOrder, validateOrderUpdate, validatePaymentStart } from '../src/server/validation';
 
 test('public order input cannot inject financial or status fields', () => {
@@ -85,4 +87,18 @@ test('payment input rejects invalid or expired card details', () => {
   assert.throws(() => validatePaymentStart({ ...validInput, cardNumber: '4242424242424241' }));
   assert.throws(() => validatePaymentStart({ ...validInput, expiryYear: '20' }));
   assert.throws(() => validatePaymentStart({ ...validInput, cvv: '1234' }));
+  assert.throws(() => validatePaymentStart({ ...validInput, orderId: 'not-a-uuid' }));
+});
+
+test('api responses and admin cookies use restrictive security defaults', () => {
+  const response = json({ ok: true });
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  assert.equal(response.headers.get('x-frame-options'), 'DENY');
+  assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(response.headers.get('referrer-policy'), 'no-referrer');
+
+  const cookie = sessionCookie('a'.repeat(64));
+  assert.match(cookie, /HttpOnly/u);
+  assert.match(cookie, /Secure/u);
+  assert.match(cookie, /SameSite=Strict/u);
 });

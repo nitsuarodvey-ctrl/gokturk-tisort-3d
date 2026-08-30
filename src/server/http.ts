@@ -5,7 +5,11 @@ export function json(data: unknown, status = 200, headers: HeadersInit = {}) {
     status,
     headers: {
       'Cache-Control': 'no-store',
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()',
+      'Referrer-Policy': 'no-referrer',
       'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
       ...headers,
     },
   });

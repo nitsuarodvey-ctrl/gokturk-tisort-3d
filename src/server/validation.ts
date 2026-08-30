@@ -112,6 +112,10 @@ function passesLuhn(cardNumber: string) {
 
 export function validatePaymentStart(input: unknown) {
   const value = objectValue(input);
+  const orderId = text(value.orderId, 'Sipariş', 36);
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(orderId)) {
+    throw new RequestError('Sipariş kimliği geçersiz.');
+  }
   const cardNumber = text(value.cardNumber, 'Kart numarası', 32).replace(/\D/gu, '');
   if (!/^\d{13,19}$/u.test(cardNumber) || !passesLuhn(cardNumber)) {
     throw new RequestError('Kart numarası geçersiz.');
@@ -138,7 +142,7 @@ export function validatePaymentStart(input: unknown) {
   if (!/^\d{1,3}$/u.test(billingState)) throw new RequestError('İl kodu geçersiz.');
 
   return {
-    orderId: text(value.orderId, 'Sipariş', 36),
+    orderId,
     cardHolderName: text(value.cardHolderName, 'Kart sahibi', 45),
     cardNumber,
     expiryMonth,

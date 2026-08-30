@@ -39,8 +39,12 @@ export async function POST(request: Request) {
       headers: {
         'Content-Type': 'text/html; charset=UTF-8',
         'Cache-Control': 'no-store',
+        'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: https:; form-action https://sanalpos.kuveytturk.com.tr https://boatest.kuveytturk.com.tr; base-uri 'none'; frame-ancestors 'none'",
+        'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+        'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()',
         'Referrer-Policy': 'no-referrer',
         'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
       },
     });
   } catch (error) {
@@ -59,8 +63,11 @@ export async function POST(request: Request) {
         'Content-Type': 'text/html; charset=UTF-8',
         'Cache-Control': 'no-store',
         'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'",
+        'Cross-Origin-Opener-Policy': 'same-origin',
+        'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()',
         'Referrer-Policy': 'no-referrer',
         'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
       },
     });
   }

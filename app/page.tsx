@@ -60,16 +60,16 @@ export default function ShopHome() {
             height={1254}
             priority
           />
+          <span className="shop-visual-price"><small>ÖN SİPARİŞ</small>{UNIT_PRICE} TL</span>
           <span className="shop-stock-badge"><i /> ÖN SİPARİŞ AÇIK</span>
         </div>
       </section>
 
-      <div className="shop-marquee" aria-hidden="true">
-        <span>GÖKTÜRK ULUSAL BİRLİĞİ</span><i>✦</i>
-        <span>RESMÎ MERCH</span><i>✦</i>
-        <span>DROP 001</span><i>✦</i>
-        <span>SINIRLI ÜRETİM</span>
-      </div>
+      <section className="shop-trust-row" aria-label="Mağaza avantajları">
+        <div><span>01</span><strong>3D Secure ödeme</strong><small>Kart bilgileriniz kaydedilmez</small></div>
+        <div><span>02</span><strong>3 teslimat seçeneği</strong><small>Merkez, İzmir veya kargo</small></div>
+        <div><span>03</span><strong>Sınırlı üretim</strong><small>Sipariş üzerine hazırlanır</small></div>
+      </section>
 
       <section className="shop-product-section" id="urun" aria-labelledby="product-heading">
         <header className="shop-section-heading">
@@ -146,10 +146,14 @@ export default function ShopHome() {
         <div className="shop-footer-links">
           <a href={productHref}>Ürün</a>
           <a href="/bilgi">Bilgi</a>
-          <a href="/admin/login">Yönetim</a>
         </div>
         <p>© 2026 GÖKTÜRK ULUSAL BİRLİĞİ</p>
       </footer>
+
+      <a className="shop-mobile-buybar" href={productHref}>
+        <span><small>DROP 001</small>Siyah Oversize Tişört</span>
+        <strong>{UNIT_PRICE} TL <i>→</i></strong>
+      </a>
     </main>
   );
 }

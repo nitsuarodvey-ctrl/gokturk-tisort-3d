@@ -4,6 +4,7 @@ import '../src/style.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://gokturk-tisort-3d.sirloliletisim.chatgpt.site'),
+  referrer: 'strict-origin-when-cross-origin',
   title: 'GUB Merch — Resmî Mağaza',
   description:
     'Göktürk Ulusal Birliği resmî ürün mağazası. Sınırlı üretim giyim ve aksesuar koleksiyonları.',
