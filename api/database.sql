@@ -15,12 +15,40 @@ CREATE TABLE orders (
   unit_price INT UNSIGNED NOT NULL DEFAULT 499,
   total INT UNSIGNED NOT NULL,
   payment_status ENUM('waiting','paid','failed','refunded') NOT NULL DEFAULT 'waiting',
+  payment_token_hash CHAR(64) NULL,
+  payment_token_expires_at DATETIME NULL,
   order_status ENUM('received','preparing','ready','shipped','delivered','cancelled') NOT NULL DEFAULT 'received',
   delivery_status ENUM('pending','ready','shipped','delivered') NOT NULL DEFAULT 'pending',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id), UNIQUE KEY orders_order_number_unique (order_number),
   KEY orders_phone_lookup (phone_normalized), KEY orders_email_lookup (email), KEY orders_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE payment_attempts (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  order_id BIGINT UNSIGNED NOT NULL,
+  merchant_order_id VARCHAR(64) NOT NULL,
+  amount INT UNSIGNED NOT NULL,
+  currency_code CHAR(4) NOT NULL DEFAULT '0949',
+  status ENUM('initiated','awaiting_3d','provisioning','paid','failed','unknown') NOT NULL DEFAULT 'initiated',
+  gateway_order_id VARCHAR(80) NULL,
+  provision_number VARCHAR(80) NULL,
+  rrn VARCHAR(80) NULL,
+  stan VARCHAR(80) NULL,
+  response_code VARCHAR(20) NULL,
+  response_message VARCHAR(500) NULL,
+  reference_id VARCHAR(160) NULL,
+  business_key VARCHAR(160) NULL,
+  callback_count INT UNSIGNED NOT NULL DEFAULT 0,
+  last_callback_at DATETIME NULL,
+  completed_at DATETIME NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY payment_attempts_merchant_order_unique (merchant_order_id),
+  KEY payment_attempts_order_status (order_id, status),
+  CONSTRAINT payment_attempts_order_fk FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE order_items (

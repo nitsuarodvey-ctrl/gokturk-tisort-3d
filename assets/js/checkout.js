@@ -49,8 +49,9 @@
         if (!response.ok || !result.ok) throw new Error(result.message || 'Sipariş şu anda kaydedilemedi.');
         sessionStorage.setItem('last_order_number', result.order_number);
         sessionStorage.setItem('last_order_details', JSON.stringify(result.order));
+        sessionStorage.setItem('payment_token', result.payment_token);
         window.Shop.clearCart();
-        window.location.assign(`siparis-basarili.html?order=${encodeURIComponent(result.order_number)}`);
+        window.location.assign('odeme-kart.html');
       } catch (error) {
         $message.text(error.message || 'Bir bağlantı hatası oluştu. Lütfen tekrar deneyin.').addClass('is-visible').attr('role', 'alert');
         $button.prop('disabled', false).text('Siparişi oluştur');

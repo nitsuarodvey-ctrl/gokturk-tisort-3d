@@ -3,5 +3,7 @@ Allow: /
 Disallow: /api/
 Disallow: /admin/
 Disallow: /odeme.html
+Disallow: /odeme-kart.html
+Disallow: /odeme-sonucu.php
 Disallow: /siparis-basarili.html
 Disallow: /siparis-takip.html

@@ -40,12 +40,15 @@ foreach ($itemsInput as $item) {
 if ($totalQuantity > 10) respond(422, ['ok' => false, 'message' => 'Bir siparişte en fazla 10 ürün olabilir.']);
 $total = $unitPrice * $totalQuantity;
 $orderNumber = 'SEL-' . date('ymd') . '-' . strtoupper(bin2hex(random_bytes(6)));
+$paymentToken = bin2hex(random_bytes(32));
+$paymentTokenHash = hash('sha256', $paymentToken);
+$paymentTokenExpiresAt = gmdate('Y-m-d H:i:s', time() + 7200);
 
 $pdo = database();
 try {
     $pdo->beginTransaction();
-    $statement = $pdo->prepare('INSERT INTO orders (order_number, name, surname, phone, phone_normalized, email, delivery_type, city, district, address, postal_code, notes, unit_price, total, payment_status, order_status, delivery_status) VALUES (:order_number, :name, :surname, :phone, :phone_normalized, :email, :delivery_type, :city, :district, :address, :postal_code, :notes, :unit_price, :total, :payment_status, :order_status, :delivery_status)');
-    $statement->execute(['order_number' => $orderNumber, 'name' => $name, 'surname' => $surname, 'phone' => $phone, 'phone_normalized' => $normalizedPhone, 'email' => $email, 'delivery_type' => $deliveryType, 'city' => $city, 'district' => $district, 'address' => $address, 'postal_code' => $postalCode, 'notes' => $notes, 'unit_price' => $unitPrice, 'total' => $total, 'payment_status' => 'waiting', 'order_status' => 'received', 'delivery_status' => 'pending']);
+    $statement = $pdo->prepare('INSERT INTO orders (order_number, name, surname, phone, phone_normalized, email, delivery_type, city, district, address, postal_code, notes, unit_price, total, payment_status, payment_token_hash, payment_token_expires_at, order_status, delivery_status) VALUES (:order_number, :name, :surname, :phone, :phone_normalized, :email, :delivery_type, :city, :district, :address, :postal_code, :notes, :unit_price, :total, :payment_status, :payment_token_hash, :payment_token_expires_at, :order_status, :delivery_status)');
+    $statement->execute(['order_number' => $orderNumber, 'name' => $name, 'surname' => $surname, 'phone' => $phone, 'phone_normalized' => $normalizedPhone, 'email' => $email, 'delivery_type' => $deliveryType, 'city' => $city, 'district' => $district, 'address' => $address, 'postal_code' => $postalCode, 'notes' => $notes, 'unit_price' => $unitPrice, 'total' => $total, 'payment_status' => 'waiting', 'payment_token_hash' => $paymentTokenHash, 'payment_token_expires_at' => $paymentTokenExpiresAt, 'order_status' => 'received', 'delivery_status' => 'pending']);
     $orderId = (int) $pdo->lastInsertId();
     $itemStatement = $pdo->prepare('INSERT INTO order_items (order_id, product_id, product_name, size, quantity, unit_price, line_total) VALUES (:order_id, :product_id, :product_name, :size, :quantity, :unit_price, :line_total)');
     foreach ($items as $item) $itemStatement->execute(['order_id' => $orderId] + $item);
@@ -56,4 +59,4 @@ try {
     respond(500, ['ok' => false, 'message' => 'Sipariş kaydedilemedi. Lütfen tekrar deneyin.']);
 }
 
-respond(201, ['ok' => true, 'order_number' => $orderNumber, 'order' => ['items' => $items, 'delivery_type' => $deliveryType, 'address_summary' => $deliveryType === 'cargo' ? trim($address . ', ' . $district . '/' . $city) : null, 'total' => $total]]);
+respond(201, ['ok' => true, 'order_number' => $orderNumber, 'payment_token' => $paymentToken, 'order' => ['items' => $items, 'delivery_type' => $deliveryType, 'address_summary' => $deliveryType === 'cargo' ? trim($address . ', ' . $district . '/' . $city) : null, 'total' => $total, 'billing' => ['city' => $city, 'address' => $address, 'postal_code' => $postalCode]]]);

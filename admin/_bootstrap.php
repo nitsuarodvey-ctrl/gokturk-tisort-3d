@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/includes/env.php';
+require_once dirname(__DIR__) . '/includes/payment-rules.php';
 
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
@@ -20,6 +21,29 @@ try {
     error_log('Admin environment configuration error: ' . $error->getMessage());
     http_response_code(503);
     exit('Yönetim sistemi henüz yapılandırılmadı.');
+}
+
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+    if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 16384) {
+        http_response_code(413);
+        exit('İstek boyutu izin verilen sınırı aşıyor.');
+    }
+    $contentType = strtolower(trim(explode(';', $_SERVER['CONTENT_TYPE'] ?? '')[0]));
+    if ($contentType !== 'application/x-www-form-urlencoded') {
+        http_response_code(415);
+        exit('Geçersiz istek biçimi.');
+    }
+    $origin = rtrim(strtolower((string) ($_SERVER['HTTP_ORIGIN'] ?? '')), '/');
+    if ($origin !== '') {
+        $urlParts = parse_url($storeConfig['app']['url']);
+        $scheme = strtolower((string) ($urlParts['scheme'] ?? ''));
+        $port = isset($urlParts['port']) && !(($scheme === 'https' && $urlParts['port'] === 443) || ($scheme === 'http' && $urlParts['port'] === 80)) ? ':' . $urlParts['port'] : '';
+        $expectedOrigin = $scheme . '://' . strtolower((string) ($urlParts['host'] ?? '')) . $port;
+        if (!hash_equals($expectedOrigin, $origin)) {
+            http_response_code(403);
+            exit('İstek kaynağı doğrulanamadı.');
+        }
+    }
 }
 
 $scriptDirectory = str_replace('\\', '/', dirname((string) ($_SERVER['SCRIPT_NAME'] ?? '/admin')));

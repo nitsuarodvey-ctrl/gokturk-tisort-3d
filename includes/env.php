@@ -113,6 +113,45 @@ function loadStoreConfig(): array
         }
     }
 
+    $paymentEnabled = filter_var($env['KUVEYT_TURK_ENABLED'] ?? 'false', FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+    if ($paymentEnabled === null) {
+        throw new RuntimeException('KUVEYT_TURK_ENABLED must be true or false.');
+    }
+    $paymentMode = strtolower(trim($env['KUVEYT_TURK_MODE'] ?? 'test'));
+    if (!in_array($paymentMode, ['test', 'production'], true)) {
+        throw new RuntimeException('KUVEYT_TURK_MODE must be test or production.');
+    }
+    $paymentValues = ['KUVEYT_TURK_CUSTOMER_ID', 'KUVEYT_TURK_MERCHANT_ID', 'KUVEYT_TURK_USERNAME', 'KUVEYT_TURK_PASSWORD'];
+    if ($paymentEnabled) {
+        foreach ($paymentValues as $key) {
+            if (!isset($env[$key]) || trim($env[$key]) === '' || str_contains(strtoupper($env[$key]), 'CHANGE_ME')) {
+                throw new RuntimeException('Required payment value is missing: ' . $key);
+            }
+        }
+        if (!preg_match('/^[0-9]{1,20}$/', $env['KUVEYT_TURK_CUSTOMER_ID']) || !preg_match('/^[0-9]{1,20}$/', $env['KUVEYT_TURK_MERCHANT_ID'])) {
+            throw new RuntimeException('Kuveyt Turk customer or merchant id is invalid.');
+        }
+        if (!preg_match('/^[A-Za-z0-9]{1,10}$/', $env['KUVEYT_TURK_USERNAME'])) {
+            throw new RuntimeException('KUVEYT_TURK_USERNAME is invalid.');
+        }
+        if ($paymentMode === 'production' && $environment !== 'production') {
+            throw new RuntimeException('Production payment mode requires APP_ENV=production.');
+        }
+        if ($paymentMode === 'test' && $environment === 'production') {
+            throw new RuntimeException('Test payment mode requires APP_ENV=testing or development.');
+        }
+    }
+
+    $paymentUrls = $paymentMode === 'test'
+        ? [
+            'pay' => 'https://boatest.kuveytturk.com.tr/boa.virtualpos.services/Home/ThreeDModelPayGate',
+            'provision' => 'https://boatest.kuveytturk.com.tr/boa.virtualpos.services/Home/ThreeDModelProvisionGate',
+        ]
+        : [
+            'pay' => 'https://sanalpos.kuveytturk.com.tr/ServiceGateWay/Home/ThreeDModelPayGate',
+            'provision' => 'https://sanalpos.kuveytturk.com.tr/ServiceGateWay/Home/ThreeDModelProvisionGate',
+        ];
+
     $config = [
         'app' => [
             'environment' => $environment,
@@ -130,6 +169,18 @@ function loadStoreConfig(): array
         'admin' => [
             'email' => strtolower($env['ADMIN_EMAIL']),
             'password_hash' => $env['ADMIN_PASSWORD_HASH'],
+        ],
+        'payment' => [
+            'enabled' => $paymentEnabled,
+            'mode' => $paymentMode,
+            'customer_id' => trim($env['KUVEYT_TURK_CUSTOMER_ID'] ?? ''),
+            'merchant_id' => trim($env['KUVEYT_TURK_MERCHANT_ID'] ?? ''),
+            'username' => trim($env['KUVEYT_TURK_USERNAME'] ?? ''),
+            'password' => $env['KUVEYT_TURK_PASSWORD'] ?? '',
+            'pay_url' => $paymentUrls['pay'],
+            'provision_url' => $paymentUrls['provision'],
+            'callback_url' => $appUrl . '/api/payment-callback.php',
+            'return_url' => $appUrl . '/odeme-sonucu.php',
         ],
     ];
 

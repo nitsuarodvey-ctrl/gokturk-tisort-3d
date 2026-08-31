@@ -1,6 +1,7 @@
 Options -Indexes
 DirectoryIndex index.html
 ErrorDocument 404 /404.html
+ErrorDocument 500 /500.html
 
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
@@ -12,6 +13,12 @@ ErrorDocument 404 /404.html
   Header always set X-Permitted-Cross-Domain-Policies "none"
   Header always set Strict-Transport-Security "max-age=31536000"
   Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self' 'sha256-ASubtnv52ZosKUdWoPpoQRhKUUgjtRi8cxwDNq/nNAs='; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests"
+
+  # Bank/issuer HTML runs in an opaque sandboxed origin. Form and script hosts
+  # vary by issuer, but only HTTPS network targets are permitted.
+  <Files "payment-start.php">
+    Header always set Content-Security-Policy "sandbox allow-forms allow-scripts allow-popups allow-top-navigation; default-src https: data:; img-src https: data:; style-src 'unsafe-inline' https:; script-src 'unsafe-inline' https:; form-action https:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'"
+  </Files>
 </IfModule>
 
 <IfModule mod_rewrite.c>
@@ -19,10 +26,11 @@ ErrorDocument 404 /404.html
   RewriteCond %{HTTPS} !=on
   RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)(:[0-9]+)?$ [NC]
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+  RewriteRule ^(includes|tests|release|docs)(/|$) - [F,L,NC]
   RewriteRule (^|/)\. - [F]
 </IfModule>
 
-<FilesMatch "(^\.|\.(sql|log|ini|env|bak|example)$)">
+<FilesMatch "(^\.|\.(sql|log|ini|env|bak|example|zip|pem|key|p12|pfx)$)">
   Require all denied
 </FilesMatch>
 

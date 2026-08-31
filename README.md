@@ -13,13 +13,15 @@ Build işlemi gerektirmeyen HTML5, CSS3, Bootstrap 5, jQuery ve PHP/MySQL mağaz
 7. `teslimat.html`, `iletisim.html` ve hukuki sayfalardaki açık bilgi alanlarını yetkili/hukuk danışmanı onayıyla doldurun.
 8. Yönetim girişi için `.env` içindeki `ADMIN_EMAIL` değerini ve PHP `password_hash($parola, PASSWORD_DEFAULT, ['cost' => 12])` ile üretilmiş `ADMIN_PASSWORD_HASH` değerini ayarlayın. Yönetim adresi `/admin/login.php` olur.
 
-`.env` kaynak kod deposuna alınmaz ve web kökünün dışında tutulur. Üretimde `APP_URL` mutlaka `https://` ile başlamalı ve `SESSION_SECURE=true` olmalıdır. Sipariş fiyatı tarayıcıdan kabul edilmez; sunucuda 499 TL üzerinden yeniden hesaplanır. Kart verisi bu projede alınmaz veya saklanmaz.
+`.env` kaynak kod deposuna alınmaz ve web kökünün dışında tutulur. Üretimde `APP_URL` mutlaka `https://` ile başlamalı ve `SESSION_SECURE=true` olmalıdır. Sipariş fiyatı tarayıcıdan kabul edilmez; sunucuda 499 TL üzerinden yeniden hesaplanır. Kart verisi yalnızca ödeme başlatma isteği sırasında bellekte işlenir; veritabanına, oturuma veya loglara yazılmaz.
 
 ## Ödeme entegrasyonu
 
-Sipariş kaydı `api/order-create.php` içinde gerçek MySQL işlemiyle oluşturulur. Ödeme kuruluşu bağlanacağı zaman sipariş kaydından sonra sağlayıcının sunucu tarafı başlatma adresine yönlendirme eklenmelidir. Gizli anahtarlar yalnızca `.env` içinde tutulmalı, JavaScript'e yazılmamalıdır. Sağlayıcının imza doğrulaması yapılmadan `payment_status` değeri `paid` yapılmamalıdır.
+Kuveyt Türk FreePos 3D Secure iki aşamalı akış kullanılır. `api/payment-start.php` bankanın 3D ödeme ekranını başlatır; banka dönüşü `api/payment-callback.php` adresine gelir. Callback imzası, işyeri numarası, sipariş numarası ve kuruş cinsinden tutar doğrulandıktan sonra ikinci provizyon isteği gönderilir. Sipariş ancak imzalı provizyon yanıtı `ResponseCode=00` olduğunda `paid` yapılır. Tekrarlanan callback'ler veritabanı satır kilidi ve ödeme denemesi durumu ile ikinci kez provizyon oluşturmaz.
 
-Mevcut bir kurulumu güncelliyorsanız `api/migrations/20260830_security_hardening.sql` dosyasını bir kez içe aktarın. Yeni kurulumlarda yalnızca güncel `api/database.sql` yeterlidir.
+Test/canlı banka adresleri kod içinde moda göre sabittir; `.env` üzerinden değiştirilmez. Önce `APP_ENV=testing` ve `KUVEYT_TURK_MODE=test` ile banka sandbox hesabını doğrulayın. Canlıya geçerken yalnızca banka tarafından verilen canlı müşteri/işyeri/API kullanıcı bilgilerini girin, `APP_ENV=production`, HTTPS ve dışarıda tutulan `.env` kontrolünden sonra `KUVEYT_TURK_MODE=production` yapın. Sistem test modunu production uygulama ortamında, production ödeme modunu da test uygulama ortamında çalıştırmayı reddeder. Callback adresi `APP_URL` üzerinden otomatik olarak `${APP_URL}/api/payment-callback.php` olur; aynı adres istek içindeki `OkUrl` ve `FailUrl` alanlarına gönderilir.
+
+Mevcut bir kurulumu güncelliyorsanız sırasıyla `api/migrations/20260830_security_hardening.sql` ve `api/migrations/20260830_kuveyt_turk_payments.sql` dosyalarını bir kez içe aktarın. Yeni kurulumlarda yalnızca güncel `api/database.sql` yeterlidir.
 
 ## Dosyalar
 
